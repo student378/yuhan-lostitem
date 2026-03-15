@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>분실물 관리자 · 유한대학교</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & VARS ───────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#003366;--blue:#0055A4;--sky:#E8F3FF;--accent:#FF6B35;--gold:#F59E0B;
+  --bg:#F0F4FA;--card:#fff;--text:#1B2035;--sub:#4B5675;--muted:#9199AD;
+  --border:#E2E8F2;--green:#16A34A;--red:#DC2626;
+  --sh:0 2px 16px rgba(0,51,102,.08);--r:13px;
+  --touch:46px;
+  --fs-xs:11px;--fs-sm:12px;--fs-base:13px;--fs-md:14px;--fs-lg:16px;
+  /* 사이드바 너비 */
+  --sbw:220px;
+  /* 하단 탭바 높이 (모바일) */
+  --tabh:60px;
+}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:'Noto Sans KR',sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;
+}
+button,input,select,textarea{font-family:inherit;-webkit-appearance:none;appearance:none}
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239199AD' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:32px!important;
+}
+
+/* ── LOGIN ──────────────────────────────────────────────── */
+#login{
+  position:fixed;inset:0;z-index:999;
+  background:linear-gradient(135deg,var(--navy),#1A4B82);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+.lbox{
+  background:#fff;border-radius:22px;
+  padding:36px 28px;width:100%;max-width:360px;
+  box-shadow:0 24px 64px rgba(0,0,0,.3);text-align:center;
+}
+.llogo{
+  width:60px;height:60px;border-radius:50%;
+  background:linear-gradient(135deg,#003366,#0055A4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;font-weight:900;color:#fff;margin:0 auto 16px;
+}
+.lbox h2{font-size:var(--fs-lg);font-weight:800;color:var(--navy);margin-bottom:4px}
+.lbox p{font-size:var(--fs-sm);color:var(--muted);margin-bottom:24px}
+.lbox input{
+  width:100%;padding:13px 15px;
+  border:1.5px solid var(--border);border-radius:9px;
+  font-size:var(--fs-md);outline:none;transition:.2s;
+  margin-bottom:10px;min-height:var(--touch);
+}
+.lbox input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,85,164,.1)}
+.lbtn{
+  width:100%;padding:13px;
+  background:var(--navy);color:#fff;border:none;
+  border-radius:9px;font-size:var(--fs-md);font-weight:700;
+  cursor:pointer;transition:.2s;min-height:var(--touch);
+}
+.lbtn:active{background:var(--blue)}
+.lerr{font-size:var(--fs-sm);color:var(--red);margin-top:8px;display:none}
+#login.hidden{display:none}
+
+/* ── APP LAYOUT ─────────────────────────────────────────── */
+#app{display:none}
+#app.show{display:block;min-height:100vh}
+
+/* PC/태블릿: 사이드바 + 콘텐츠 레이아웃 */
+@media(min-width:768px){
+  #app.show{display:flex}
+}
+
+/* ── SIDEBAR (태블릿/PC) ─────────────────────────────────── */
+.sb{
+  width:var(--sbw);flex-shrink:0;
+  background:var(--navy);color:#fff;
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;z-index:50;
+  /* 모바일에서 숨김 */
+  display:none;
+}
+@media(min-width:768px){.sb{display:flex}}
+.sb-top{
+  padding:18px 16px 14px;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+.sb-ico{display:none}
+.sb-logo{height:32px;width:auto;max-width:130px;flex-shrink:0;display:block;object-fit:contain}
+.sb-tit{font-size:var(--fs-base);font-weight:700}
+.sb-sub2{font-size:10px;color:rgba(255,255,255,.45);margin-top:1px}
+.sb-sec{
+  padding:16px 14px 5px;
+  font-size:10px;font-weight:700;
+  color:rgba(255,255,255,.3);letter-spacing:1.2px;
+}
+.sbi{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;border-radius:8px;margin:2px 8px;
+  cursor:pointer;font-size:var(--fs-base);font-weight:500;
+  color:rgba(255,255,255,.6);transition:.18s;
+  border:none;background:none;
+  width:calc(100% - 16px);text-align:left;
+  min-height:var(--touch);
+}
+.sbi:hover,.sbi.on{background:rgba(255,255,255,.12);color:#fff}
+.sbi.on{background:rgba(255,255,255,.18)}
+.sb-badge{
+  margin-left:auto;background:var(--accent);color:#fff;
+  font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;
+}
+.sb-bot{
+  margin-top:auto;padding:10px 8px;
+  border-top:1px solid rgba(255,255,255,.1);
+}
+.sb-out{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 14px;border-radius:8px;cursor:pointer;
+  font-size:var(--fs-base);font-weight:500;
+  color:rgba(255,255,255,.45);transition:.18s;
+  border:none;background:none;width:100%;
+  min-height:var(--touch);
+}
+.sb-out:hover{background:rgba(255,107,53,.2);color:#fff}
+
+/* ── BOTTOM TAB BAR (모바일 전용) ───────────────────────── */
+.btab{
+  position:fixed;bottom:0;left:0;right:0;z-index:50;
+  background:var(--navy);
+  display:flex;align-items:center;
+  height:var(--tabh);
+  padding-bottom:env(safe-area-inset-bottom);
+  box-shadow:0 -2px 12px rgba(0,0,0,.2);
+}
+@media(min-width:768px){.btab{display:none}}
+.bti{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;padding:6px 4px;
+  color:rgba(255,255,255,.5);font-size:10px;font-weight:600;
+  background:none;border:none;cursor:pointer;transition:.15s;
+  min-height:var(--tabh);
+  -webkit-tap-highlight-color:transparent;
+}
+.bti .bti-ico{font-size:20px;line-height:1}
+.bti.on{color:#fff}
+.bti.on .bti-ico{filter:drop-shadow(0 0 4px rgba(255,255,255,.4))}
+.bti-badge{
+  position:absolute;top:6px;right:calc(50% - 20px);
+  background:var(--accent);color:#fff;
+  font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;
+  display:none;
+}
+.bti-badge.on{display:block}
+
+/* ── CONTENT ────────────────────────────────────────────── */
+.content{
+  padding:16px 14px calc(var(--tabh) + 20px);
+  min-height:100vh;
+}
+@media(min-width:768px){
+  .content{
+    margin-left:var(--sbw);
+    padding:22px 20px 60px;
+    max-width:calc(100vw - var(--sbw));
+  }
+}
+@media(min-width:1024px){
+  .content{padding:26px 28px 60px}
+}
+
+/* ── TOP HEADER (모바일 전용) ───────────────────────────── */
+.m-topbar{
+  background:var(--navy);color:#fff;
+  padding:0 14px;height:52px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:40;
+}
+@media(min-width:768px){.m-topbar{display:none}}
+.m-tb-title{font-size:var(--fs-md);font-weight:700}
+.m-tb-logo{height:28px;width:auto;max-width:120px;display:block;object-fit:contain}
+.m-tb-sub{font-size:10px;color:rgba(255,255,255,.5)}
+.m-tb-right{display:flex;gap:8px;align-items:center}
+.m-logout{
+  color:rgba(255,255,255,.6);font-size:var(--fs-xs);
+  border:1px solid rgba(255,255,255,.2);padding:6px 10px;
+  border-radius:8px;background:none;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* ── PAGE TITLE ─────────────────────────────────────────── */
+.pg-hd{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:18px;flex-wrap:wrap;gap:10px;
+}
+.pg-hd h1{font-size:clamp(17px,4vw,21px);font-weight:800;color:var(--navy)}
+.pg-hd .tsub{font-size:var(--fs-sm);color:var(--muted);margin-top:3px}
+.tbr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btnp{
+  padding:10px 16px;background:var(--navy);color:#fff;
+  border:none;border-radius:9px;font-size:var(--fs-base);font-weight:700;
+  cursor:pointer;transition:.2s;
+  display:flex;align-items:center;gap:5px;
+  min-height:var(--touch);
+  -webkit-tap-highlight-color:transparent;
+}
+.btnp:active{background:var(--blue)}
+.btnr{
+  padding:10px 13px;background:#fff;color:var(--muted);
+  border:1.5px solid var(--border);border-radius:9px;
+  font-size:var(--fs-base);cursor:pointer;transition:.2s;
+  min-height:var(--touch);
+  -webkit-tap-highlight-color:transparent;
+}
+.btnr:active{border-color:var(--blue);color:var(--blue)}
+
+/* ── STAT CARDS ─────────────────────────────────────────── */
+/* 모바일:2열 / 태블릿+:4열 */
+.scards{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;margin-bottom:18px;
+}
+@media(min-width:600px){.scards{grid-template-columns:repeat(4,1fr)}}
+.sc{
+  background:var(--card);border:1.5px solid var(--border);
+  border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh);
+}
+.scn{font-size:clamp(22px,5vw,28px);font-weight:900;color:var(--navy);line-height:1}
+.scl{font-size:var(--fs-xs);color:var(--muted);margin-top:4px}
+.sci{font-size:18px;float:right;opacity:.5}
+
+/* ── TABLE WRAP ─────────────────────────────────────────── */
+.tw{
+  background:var(--card);border:1.5px solid var(--border);
+  border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);
+}
+.tw-hd{
+  padding:12px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;
+}
+.tw-hd h3{font-size:var(--fs-md);font-weight:800;color:var(--navy)}
+.tf{display:flex;gap:7px;align-items:center;flex-wrap:wrap;width:100%}
+@media(min-width:600px){.tf{width:auto}}
+.tf input,.tf select{
+  font-size:var(--fs-sm);
+  border:1.5px solid var(--border);border-radius:8px;
+  padding:8px 10px;outline:none;transition:.2s;
+  color:var(--text);background:#fff;
+  min-height:var(--touch);
+}
+.tf input{flex:1;min-width:120px}
+.tf input:focus,.tf select:focus{border-color:var(--blue)}
+.tcnt{
+  font-size:var(--fs-sm);color:var(--muted);background:var(--sky);
+  padding:5px 10px;border-radius:6px;white-space:nowrap;
+  min-height:36px;display:flex;align-items:center;
+}
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;white-space:nowrap}
+th{
+  background:var(--bg);font-size:var(--fs-xs);font-weight:700;
+  color:var(--muted);padding:9px 11px;text-align:left;
+}
+td{
+  padding:10px 11px;font-size:var(--fs-sm);
+  border-top:1px solid var(--border);vertical-align:middle;
+}
+tr:hover td{background:#FAFBFF}
+.tdimg{
+  width:40px;height:40px;border-radius:7px;
+  object-fit:cover;border:1.5px solid var(--border);cursor:zoom-in;
+}
+.tdico{
+  width:40px;height:40px;border-radius:7px;
+  background:var(--sky);display:flex;align-items:center;
+  justify-content:center;font-size:20px;
+}
+.tdcat{
+  font-size:10px;font-weight:700;color:var(--blue);
+  background:var(--sky);padding:2px 7px;border-radius:4px;
+}
+.tdbadge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.bk{background:#DBEAFE;color:#1E40AF}
+.bd{background:#DCFCE7;color:#166534}
+.bp{background:#FEE2E2;color:#991B1B}
+.bnew{background:#FEF3C7;color:#92400E}
+.bprc{background:#E0E7FF;color:#3730A3}
+.tda{display:flex;gap:4px}
+.ab{
+  padding:6px 9px;border-radius:7px;
+  font-size:11px;font-weight:700;cursor:pointer;border:none;
+  transition:.15s;min-height:32px;
+  -webkit-tap-highlight-color:transparent;
+}
+.ae{background:var(--sky);color:var(--blue)}
+.ae:active{background:var(--blue);color:#fff}
+.af{background:#DCFCE7;color:#166534}
+.af:active{background:#16a34a;color:#fff}
+.adl{background:#FEE2E2;color:var(--red)}
+.adl:active{background:var(--red);color:#fff}
+.apc{background:#E0E7FF;color:#3730A3}
+.apc:active{background:#4F46E5;color:#fff}
+.acp{background:#DCFCE7;color:#166534}
+.acp:active{background:#16a34a;color:#fff}
+.nodata{text-align:center;padding:40px;color:var(--muted);font-size:var(--fs-base)}
+.ldtbl{text-align:center;padding:40px;color:var(--muted)}
+.sptbl{
+  width:26px;height:26px;border:3px solid var(--border);
+  border-top-color:var(--blue);border-radius:50%;
+  animation:rot .8s linear infinite;margin:0 auto 10px;
+}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* ── PAGES ──────────────────────────────────────────────── */
+.page{display:none}
+.page.on{display:block;animation:up .25s ease}
+@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── MODAL OVERLAY ──────────────────────────────────────── */
+.ov{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.55);z-index:200;
+  align-items:flex-end;justify-content:center;
+  padding:0;
+}
+.ov.on{display:flex;animation:fi .2s}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+@media(min-width:600px){
+  .ov{align-items:center;padding:20px}
+}
+/* 모달 공통 */
+.modal{
+  background:#fff;
+  border-radius:20px 20px 0 0;
+  width:100%;overflow:hidden;
+  box-shadow:0 -8px 40px rgba(0,0,0,.2);
+  max-height:92vh;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  animation:slideUp .28s cubic-bezier(.32,1,.23,1);
+}
+@media(min-width:600px){
+  .modal{
+    border-radius:18px;
+    animation:suUp .25s ease;
+    max-height:90vh;
+  }
+  .modal.sm{max-width:420px}
+  .modal.md{max-width:540px}
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes suUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.mo-handle{
+  width:40px;height:4px;border-radius:2px;
+  background:var(--border);margin:10px auto 4px;
+}
+@media(min-width:600px){.mo-handle{display:none}}
+
+/* ── MODAL FORM ─────────────────────────────────────────── */
+.mhd{
+  padding:14px 18px 0;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:#fff;z-index:10;
+  border-bottom:1px solid var(--border);padding-bottom:12px;
+}
+.mhd h3{font-size:var(--fs-md);font-weight:800;color:var(--navy)}
+.mhd button{
+  background:none;border:none;font-size:20px;cursor:pointer;
+  color:var(--muted);padding:4px;min-width:var(--touch);min-height:var(--touch);
+  display:flex;align-items:center;justify-content:center;
+}
+.mbody{padding:16px 18px 18px}
+.fg{margin-bottom:13px}
+.fg label{display:block;font-size:var(--fs-xs);font-weight:700;color:var(--navy);margin-bottom:5px}
+.req{color:var(--accent)}
+.fg input,.fg select,.fg textarea{
+  width:100%;font-size:var(--fs-base);
+  border:1.5px solid var(--border);border-radius:9px;
+  padding:10px 12px;background:#fff;color:var(--text);
+  outline:none;transition:.2s;resize:vertical;
+  min-height:var(--touch);
+}
+.fg input:focus,.fg select:focus,.fg textarea:focus{
+  border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,85,164,.07);
+}
+.fg textarea{min-height:70px}
+.frow{display:grid;grid-template-columns:1fr;gap:0}
+@media(min-width:480px){.frow{grid-template-columns:1fr 1fr;gap:11px}}
+.mfoot{
+  display:flex;gap:10px;
+  padding:0 18px 18px;
+  padding-bottom:calc(18px + env(safe-area-inset-bottom));
+  position:sticky;bottom:0;background:#fff;
+  border-top:1px solid var(--border);padding-top:12px;
+}
+.bcn{
+  flex:1;padding:11px;
+  border:1.5px solid var(--border);border-radius:9px;
+  background:#fff;font-size:var(--fs-base);font-weight:600;
+  cursor:pointer;color:var(--sub);min-height:var(--touch);
+}
+.bsv{
+  flex:2;padding:11px;border:none;border-radius:9px;
+  background:var(--navy);color:#fff;
+  font-size:var(--fs-base);font-weight:700;cursor:pointer;
+  transition:.15s;min-height:var(--touch);
+}
+.bsv:active{background:var(--blue)}
+.bdng{
+  flex:2;padding:11px;border:none;border-radius:9px;
+  background:var(--red);color:#fff;
+  font-size:var(--fs-base);font-weight:700;cursor:pointer;
+  min-height:var(--touch);
+}
+/* ── IMG UPLOAD ─────────────────────────────────────────── */
+.uarea{
+  border:2px dashed var(--border);border-radius:9px;
+  padding:16px;text-align:center;cursor:pointer;
+  background:var(--bg);transition:.2s;position:relative;
+  overflow:hidden;
+}
+.uarea:active{border-color:var(--blue);background:var(--sky)}
+.uarea.drag-over{border-color:var(--blue);background:var(--sky);transform:scale(1.01)}
+.uarea.has-img{border-color:var(--green);background:#F0FDF4}
+.uarea.error{border-color:var(--red);background:#FFF5F5}
+.uarea input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.uarea p{font-size:var(--fs-sm);color:var(--muted)}
+.uarea .uarea-hint{font-size:10px;color:var(--muted);margin-top:4px}
+/* 압축 진행 표시 */
+.img-progress{
+  display:none;
+  background:var(--sky);border-radius:8px;
+  padding:10px 14px;margin-top:8px;
+  font-size:var(--fs-sm);color:var(--blue);font-weight:600;
+  align-items:center;gap:8px;
+}
+.img-progress.on{display:flex}
+.img-progress-bar{
+  flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;
+}
+.img-progress-fill{
+  height:100%;background:var(--blue);border-radius:2px;
+  transition:width .3s;width:0%;
+}
+/* 이미지 상태 안내 */
+.img-status{
+  display:none;font-size:var(--fs-xs);
+  padding:6px 10px;border-radius:7px;margin-top:7px;
+  align-items:center;gap:5px;
+}
+.img-status.ok{display:flex;background:#DCFCE7;color:#166534}
+.img-status.err{display:flex;background:#FEE2E2;color:var(--red)}
+.img-status.warn{display:flex;background:#FEF9C3;color:#854D0E}
+/* 미리보기 */
+.uprevs{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;align-items:flex-start}
+.uprv-item{position:relative}
+.uprevs img{
+  width:72px;height:72px;object-fit:cover;
+  border-radius:8px;border:2px solid var(--green);
+  display:block;
+}
+.uprv-del{
+  position:absolute;top:-5px;right:-5px;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--red);color:#fff;
+  border:none;cursor:pointer;font-size:10px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  line-height:1;
+}
+.curimg{width:76px;height:76px;object-fit:cover;border-radius:9px;border:1.5px solid var(--border);display:block;margin-bottom:7px}
+/* ── DETAIL ROWS ────────────────────────────────────────── */
+.drow{
+  display:flex;gap:10px;
+  padding:8px 0;border-bottom:1px solid var(--border);
+  font-size:var(--fs-base);
+}
+.drow:last-child{border:none}
+.dlbl{color:var(--muted);min-width:68px;font-size:var(--fs-sm);font-weight:600;flex-shrink:0}
+
+/* ── TOAST ──────────────────────────────────────────────── */
+.toast{
+  position:fixed;bottom:calc(var(--tabh) + 12px);right:16px;
+  background:#1B2035;color:#fff;
+  padding:11px 16px;border-radius:11px;
+  font-size:var(--fs-base);font-weight:600;
+  box-shadow:0 8px 24px rgba(0,0,0,.22);
+  transform:translateY(80px);
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+  z-index:999;max-width:calc(100vw - 32px);
+}
+.toast.on{transform:translateY(0)}
+@media(min-width:768px){
+  .toast{
+    bottom:24px;right:24px;
+    bottom:24px;
+  }
+}
+
+/* ── PC HOVER ───────────────────────────────────────────── */
+@media(hover:hover){
+  .btnp:hover{background:var(--blue)}
+  .btnr:hover{border-color:var(--blue);color:var(--blue)}
+  .bsv:hover{background:var(--blue)}
+  .ae:hover{background:var(--blue);color:#fff}
+  .af:hover{background:#16a34a;color:#fff}
+  .adl:hover{background:var(--red);color:#fff}
+  .apc:hover{background:#4F46E5;color:#fff}
+  .acp:hover{background:#16a34a;color:#fff}
+  .sbi:hover{background:rgba(255,255,255,.12);color:#fff}
+  .sb-out:hover{background:rgba(255,107,53,.2);color:#fff}
+}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login">
+  <div class="lbox">
+    <div class="llogo">유</div>
+    <h2>관리자 로그인</h2>
+    <p>학생복지팀 분실물 관리 시스템</p>
+    <input type="password" id="pwIn" placeholder="관리자 비밀번호" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="lbtn" onclick="doLogin()">🔐 로그인</button>
+    <div class="lerr" id="lerr">비밀번호가 올바르지 않습니다</div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app">
+
+  <!-- 모바일 상단 헤더 -->
+  <div class="m-topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAABUCAYAAADgd65nAAAJXklEQVR4nO2d6a7cNgyFPUXf/5WnPwq3jkYLV5GUzwcESe71aNcxJZGaz/f7vQAAAPzyV3QBAAAgKxBIAAAYAIEEAIABf0cXoIN0U/RjWgoAwOvJIpAWJ0VtGhBMAICKKIHkCOLn8fwtepTPQzABACp270F+r7W4zYRMY2lS8gYAgP/YZUGOhIljEVJZpdlaowAA0GWHQK7E8f73d/L/VXrt85S0vte5ItnWPxrKCzBDOU8CbW6Ap0CuhMxLoKhC+3y24kChWt2z5yrWG4BteAkkx/rrPTOauCvBa5+lUsWatN5DzWZpctDsZXvCKVe1l1fWNnfD+pCGexCiEVJN+tf125mZD3F2lC1z/SVkr8uqfNnKL/EcKY+lBTlzq6Huh4z2Clfp9PJeieMsrUxvwt2DjlN/y7JF7ZlZ1WHXmKne5hlElFwnK4FcHYJQBMmz4Z4n25S8MoikpD2sXKQy1L9H1nIBGhnE8boYW0sWS+zVIcjosIaaxv18+4dTpmc5qA7kWTqTAqVNKM88qVR/UINyLzetQErFZrX8pYghVzRHzN4mUSLBjTTiYCmS5QY8AA3TMa5ZYo/EUbJctpponH1Pqu9l5mWdtFzeWxpeRPZDljFQte9uSpVfKpBWQuI56GYRNRzH9DuNLBPkJkt5PKKhRnmAf6ne5jv7U9VG1n6QPSHpic/OBuoNJs6Sfze7yhLxJu/1u9Y39q1I/YEzjfX0SPYge2I3W9pGiiMl3wiXltPQuItA+HwY7ctT9+ul4/3b+VMWrkCOltYe0S0e9AaHhWO7JRX96VZQTtgBndKiUwnrSJrZQM80CShlyVTeHlkmya5ySPLpWTPR7ZahDNeVf3yngLMHSY1WoUTEVKBCpI20LFUsfgBCsXTzGf2sOlGHGdQ8o0IDAehx1EuVKpDSsLcsBzRPLJywd1iRXJF8fm72e07+mfDwlX0zeFkS4FqQs9Nq7xhncvwkMY1nWjMhjxxIEuvVoryc9rXod682ziiGO3wY7/Qz1r+F6wGh8ZhgQxHInv/g8zS4F+O8mgzayTJ6Rppub5J7ij2HnUt8z/qM2guWDB/qmNC0eQVx7WFabm0kjcaSy+xNP7Iooyazt0Wr7QvOhJWmD/7Eu82rYqotXDcfig9htgMD7YntZ/JMxODTXs5hnc4zPQ8gjmPQ5s6sLMjesnMV48xhFJpIKYtHNMDzrVxhOZhtIFtvB2SrX0Ys2xzt3aBx87Fadkr3JFfLfOtyeYljNtGlQAkI0NQLE5WHts3R3gOoAvl8S3nsH64s09Vnb6wmJyWe3LM9ToCzHYH2s4HzQue2OcVSPa4fZwLZO70e/f+69I1zC82sIygCaGmRraxXQOe4yZMcj/Z+XR96fi+2hNYaoxycPJfakj1HYMupLiTZXorZynNdNft1CkcgJYcWUkdnrqMypSxSvB2cI0IZwf+g/e04bruJIpCUCnvuSVKft2T3pFnV1coqO9W6A8AF6+vOLJHEIQMgoeJLoWKZy5FtD7IlKoaXy3FLiwOQnNJakGnlYUmWubaV7AJ5XfYxvNzlM8QvJ+gTQEE1TkZL7GxvC+5FEpy0AACgi2YPcrfQ9G4N2gEsFQBeiuX3Yo/I4EaxuvNxhvbmIvDLCde3AToWYb878vsZLxbfaiil2gbz1ygdAEARRgI5OxSxEomqYlO13AAAJhn8IKstg3rlrVYHT9AW4BgkoYYSC6q9Z3F2EYYXq7seqWlkhFquXfvBWdspmvaegUo3HGlu88lWFzLcQxrLizkrOtRG+URa5ll2sBZBco9AFaqVVw1niW11xdjuU2GJ5bvrOjUAQGIoAnnade4VQ8oAAAFoD2mkYhPlZA4AAGRmArm6vl1y2BJtRUquBFvFgUfXCQDgRKSbT7avfQUAgD/Q3ObTEx7KKW9U6GGF7QBuOGRryXIs29Gz1DQ4ZdXUi5M2d4UgaSOLes/6jVKuUR6arx3ZcSnz6PPaOnDymuX7w8qCfNvysZK1ubrhSHJq71H/0YvU4nlunTnPU5/1iDOWXhYtKQsnhPZ7jZ+npNN7xvKmLk46pHwlS+xdXw9giUV+ERE0lQQ7giwvcG0/RddDkn+FKwfV+UgE8l5GR3cqFe6tPb3PZ4tAGR2anYzG0jqRDHWPuoJQC3n+UASSsm/A+d0q3QgkddlV/mqD78mbHO6t6yPdS+z9fPWH8jkuq8+WsCKlp9gU0cggklbf9JcpLPKN1uPNaaL6JHsfason+X4giYhTxJw1f6gCKV36nTygd1LpUoObbC+eHZSwihSsfIJnP48cp+L5Y+kHme2GHCuncGnaGkYDMUsEUqSwnSaqM6h1jdzu4V7OoVm2c/JpEc0f7nVnkj2l++ezBrE+BJEurTNsC3DYURarfpFcGlIRii/wCMo84Lbf6nntISb1M5nmzc2yTDsjaaw6agVlD6LCJM04oKhIfDBHcJZ1EVR39ZoZNjO/xydUg2Tn3DPpF65AajP1FkkLH01N+jvJVJYVHv2aSSRbNGWTHGhE8Wn+7WmNWkMqq6WjOLWBvETyRHGctXVVKpd9xC4B90jTer5Z6YAF6vmjicVu4ey9rPYlR3sxEp9ETkfscgivgqRdJXu7lLHz5r4ZtQ9lvnm8kLj5lu036R4k1/lz9jznM5xBwk37/gzn+R145F12wCbGsp+yWNmUeULZqxxZlZmi07poDmksO3HUwG0elN9bbwRnGawV8I7PfXNf7H6pfZq/qRz18t11ozj3VJMqdJxnJeWpPiGPGqwGeEeD7Bwv0Xm9IozUYg9Suzfk4R9nkWZ1cbx57l/t3kLwODiz3ots98OzTG6renpa5vfYGu07U8ZdlvbuYuUHqYlAeQ5QqYd9z0Nf4/VfVRwl+7FW7JrMXli1UdWxs0JSryo+x0OsQw1X0TIrng3aPm95Uq35/WlEWY9RaUtfwJmIKs/IwDmhTbt4RNJIrBhKOCInBGsVHdBDar1mg1OH6PpmmugWz2o+45mON1yRrFKv6/P9ulnA3ITbpXFvf+JD+L0m7xPRbDW8BbSRLRnd5URYOoq3cMXKSqktl9sn8IY6akEb2XJMe+64rMJqiWIdvnRMJwIAfPBcYvfIcKIFYQQAkPBcYveIjM+EMAIAWOwWyCfeYglBBACoiBTIJ6uYa0kaAACgIotAtkDsAADh7PzKBQAAKAUEEgAABkAgAQBgwD/1A3fzc64xnQAAAABJRU5ErkJggg==" alt="유한대학교" class="m-tb-logo">
+      <div>
+        <div class="m-tb-title">분실물 관리자</div>
+        <div class="m-tb-sub">학생복지팀 · 유재라관 1층</div>
+      </div>
+    </div>
+    <div class="m-tb-right">
+      <button class="m-logout" onclick="logout()">로그아웃</button>
+    </div>
+  </div>
+
+  <!-- PC/태블릿 사이드바 -->
+  <aside class="sb">
+    <div class="sb-top">
+      <div class="sb-ico">유</div>
+      <div><div class="sb-tit">분실물 관리</div><div class="sb-sub2">학생복지팀</div></div>
+    </div>
+    <div class="sb-sec">관리 메뉴</div>
+    <button class="sbi on" onclick="showPg('items',this)">
+      <span>📦</span> 보관 분실물
+    </button>
+    <button class="sbi" onclick="showPg('reports',this)">
+      <span>📨</span> 신고 접수
+      <span class="sb-badge" id="newBadge" style="display:none">0</span>
+    </button>
+    <div class="sb-bot">
+      <button class="sb-out" onclick="logout()">🚪 로그아웃</button>
+    </div>
+  </aside>
+
+  <!-- 콘텐츠 영역 -->
+  <main class="content">
+
+    <!-- ── PAGE: 분실물 목록 ── -->
+    <div class="page on" id="pg-items">
+      <div class="pg-hd">
+        <div>
+          <h1>📦 보관 분실물 관리</h1>
+          <div class="tsub">등록 · 수정 · 삭제 · 상태 관리</div>
+        </div>
+        <div class="tbr">
+          <button class="btnr" onclick="loadItems()">🔄</button>
+          <button class="btnp" onclick="openAdd()">➕ 분실물 등록</button>
+        </div>
+      </div>
+
+      <!-- 통계 -->
+      <div class="scards">
+        <div class="sc"><span class="sci">📦</span><div class="scn" id="sc1">—</div><div class="scl">전체 등록</div></div>
+        <div class="sc"><span class="sci">🔵</span><div class="scn" id="sc2">—</div><div class="scl">보관 중</div></div>
+        <div class="sc"><span class="sci">✅</span><div class="scn" id="sc3">—</div><div class="scl">주인 찾음</div></div>
+        <div class="sc"><span class="sci">⚠️</span><div class="scn" id="sc4">—</div><div class="scl">처분 예정</div></div>
+      </div>
+
+      <!-- 테이블 -->
+      <div class="tw">
+        <div class="tw-hd">
+          <h3>분실물 목록</h3>
+          <div class="tf">
+            <input type="search" id="iSrch" placeholder="물품명·장소 검색..." oninput="renderIT()" autocomplete="off">
+            <select id="iSt" onchange="renderIT()">
+              <option value="전체">전체 상태</option>
+              <option>보관중</option><option>주인찾음</option><option>처분예정</option>
+            </select>
+            <span class="tcnt" id="iCnt">0건</span>
+          </div>
+        </div>
+        <div class="tbl-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>사진</th><th>분류</th><th>물품명</th>
+                <th>색상/브랜드</th><th>발견장소</th><th>보관위치</th>
+                <th>접수일</th><th>상태</th><th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="itb">
+              <tr><td colspan="9" class="ldtbl"><div class="sptbl"></div>로딩 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PAGE: 신고 접수 ── -->
+    <div class="page" id="pg-reports">
+      <div class="pg-hd">
+        <div>
+          <h1>📨 신고 접수 관리</h1>
+          <div class="tsub">학생 신고 목록 · 구글 시트 실시간 연동</div>
+        </div>
+        <div class="tbr">
+          <button class="btnr" onclick="loadReports()">🔄</button>
+        </div>
+      </div>
+
+      <div class="tw">
+        <div class="tw-hd">
+          <h3>신고 목록</h3>
+          <div class="tf">
+            <input type="search" id="rSrch" placeholder="이름·물품명·학과 검색..." oninput="renderRT()" autocomplete="off">
+            <select id="rSt" onchange="renderRT()">
+              <option value="전체">전체 상태</option>
+              <option>신규</option><option>처리중</option><option>주인찾음</option><option>폐기</option>
+            </select>
+            <span class="tcnt" id="rCnt">0건</span>
+          </div>
+        </div>
+        <div class="tbl-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>접수번호</th><th>분류</th><th>물품명</th><th>분실날짜</th>
+                <th>분실장소</th><th>신고자</th><th>학과</th>
+                <th>연락처</th><th>접수일시</th><th>상태</th><th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="rtb">
+              <tr><td colspan="11" class="ldtbl"><div class="sptbl"></div>로딩 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 모바일 하단 탭바 -->
+  <nav class="btab">
+    <button class="bti on" id="bti-items" onclick="showPgMobile('items',this)">
+      <span class="bti-ico">📦</span>
+      <span>분실물</span>
+    </button>
+    <button class="bti" id="bti-reports" onclick="showPgMobile('reports',this)">
+      <span class="bti-ico">📨</span>
+      <span>신고접수</span>
+      <span class="bti-badge" id="btiBadge">0</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ── ITEM ADD/EDIT MODAL ── -->
+<div class="ov" id="itemOv" onclick="closeIOv(event)">
+  <div class="modal md" onclick="event.stopPropagation()" id="itemModal">
+    <div class="mo-handle"></div>
+    <div class="mhd">
+      <h3 id="imTitle">분실물 등록</h3>
+      <button onclick="closeIOvD()">✕</button>
+    </div>
+    <div class="mbody">
+      <input type="hidden" id="editId">
+      <div class="frow">
+        <div class="fg">
+          <label>분류 <span class="req">*</span></label>
+          <select id="iCat">
+            <option value="">선택</option>
+            <option>가방·지갑</option><option>전자기기</option><option>의류·잡화</option>
+            <option>열쇠·카드</option><option>문구·도서</option><option>기타</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>상태</label>
+          <select id="iStat">
+            <option value="보관중">보관중</option>
+            <option value="주인찾음">주인찾음</option>
+            <option value="처분예정">처분예정</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg">
+        <label>물품명 <span class="req">*</span></label>
+        <input type="text" id="iName" placeholder="예: 검정색 백팩, 에어팟 프로" autocomplete="off">
+      </div>
+      <div class="frow">
+        <div class="fg">
+          <label>색상</label>
+          <input type="text" id="iColor" placeholder="블랙, 화이트...">
+        </div>
+        <div class="fg">
+          <label>브랜드</label>
+          <input type="text" id="iBrand" placeholder="나이키, 삼성...">
+        </div>
+      </div>
+      <div class="fg">
+        <label>발견 장소 <span class="req">*</span></label>
+        <select id="iFoundLoc" onchange="toggleAdminSubLoc()">
+          <option value="">선택</option>
+          <option>1호관</option><option>2호관</option><option>3호관</option>
+          <option>4호관</option><option>5호관</option><option>6호관</option>
+          <option>7호관(도서관)</option><option>이마트편의점</option>
+          <option>학생식당</option><option>교직원식당</option>
+          <option>뉴스퀘어(도서관4층)</option><option>주차장</option>
+          <option>나눔의숲</option><option>파고라</option><option>기타</option>
+        </select>
+      </div>
+      <div class="fg" id="aSubLocWrap" style="display:none">
+        <label>세부 발견 장소</label>
+        <input type="text" id="iSubLoc" placeholder="예: 3층 강의실, 화장실 앞..." autocomplete="off">
+      </div>
+      <div class="fg">
+        <label>보관 위치</label>
+        <select id="iLoc">
+          <option>학생복지팀</option><option>1호관</option><option>2호관</option>
+          <option>3호관</option><option>4호관</option><option>5호관</option>
+          <option>6호관</option><option>7호관(도서관)</option>
+        </select>
+      </div>
+      <div class="frow">
+        <div class="fg">
+          <label>접수일 <span class="req">*</span></label>
+          <input type="date" id="iDate">
+        </div>
+        <div class="fg">
+          <label>습득자/담당자</label>
+          <input type="text" id="iRpt" placeholder="도서관직원">
+        </div>
+      </div>
+      <div class="fg">
+        <label>상세 설명</label>
+        <textarea id="iDesc" placeholder="색상, 브랜드, 특이사항..."></textarea>
+      </div>
+      <div class="fg">
+        <label>사진 첨부</label>
+        <div id="curImgW" style="display:none">
+          <img id="curImg" class="curimg">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">현재 사진 (새 업로드 시 교체)</div>
+        </div>
+        <label class="uarea" id="uareaBox">
+          <input type="file" id="iPhoto" accept="image/jpeg,image/png,image/gif,image/webp" onchange="prevImg(this)">
+          <div style="font-size:22px;margin-bottom:5px">📷</div>
+          <p>탭하여 사진 업로드</p>
+          <div class="uarea-hint">JPG · PNG · GIF · WEBP · 최대 10MB</div>
+          <div class="uarea-hint" style="margin-top:2px;color:#0055A4;font-weight:600">→ 자동으로 800px / 품질 75%로 압축됩니다</div>
+        </label>
+        <!-- 압축 진행 표시 -->
+        <div class="img-progress" id="imgProgress">
+          <span>🔄 압축 중...</span>
+          <div class="img-progress-bar"><div class="img-progress-fill" id="imgProgressFill"></div></div>
+        </div>
+        <!-- 결과 상태 메시지 -->
+        <div class="img-status" id="imgStatus"></div>
+        <!-- 미리보기 -->
+        <div class="uprevs" id="uprv"></div>
+        <!-- 압축된 이미지 데이터 저장 -->
+        <input type="hidden" id="iPhotoData" value="">
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="bcn" onclick="closeIOvD()">취소</button>
+      <button class="bsv" id="iSvBtn" onclick="saveItem()">💾 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── DELETE CONFIRM ── -->
+<div class="ov" id="delOv" onclick="closeDelOv(event)">
+  <div class="modal sm" onclick="event.stopPropagation()">
+    <div class="mo-handle"></div>
+    <div class="mhd">
+      <h3>⚠️ 삭제 확인</h3>
+      <button onclick="closeDelOvD()">✕</button>
+    </div>
+    <div class="mbody">
+      <p style="font-size:var(--fs-md);line-height:1.6">
+        <strong id="delNm"></strong><br>
+        <span style="font-size:var(--fs-sm);color:var(--muted)">삭제하면 복구할 수 없습니다. 정말 삭제하시겠습니까?</span>
+      </p>
+    </div>
+    <div class="mfoot">
+      <button class="bcn" onclick="closeDelOvD()">취소</button>
+      <button class="bdng" onclick="confirmDel()">🗑️ 삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── REPORT DETAIL ── -->
+<div class="ov" id="rptOv" onclick="closeROv(event)">
+  <div class="modal md" onclick="event.stopPropagation()">
+    <div class="mo-handle"></div>
+    <div class="mhd">
+      <h3>📋 신고 상세</h3>
+      <button onclick="closeROvD()">✕</button>
+    </div>
+    <div class="mbody" id="rptDet"></div>
+    <div class="mfoot" id="rptActs"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyUR3oskoo5qJcZEec1XEfTqh2DLyMatYDMXmf0lKtjBNrblcjxiyV_nT2HdJYOwlJ_/exec'; // ← GAS 웹앱 URL 교체
+
+// ── STATE ─────────────────────────────────────────────────
+let adminPW = '', allItems = [], allReports = [], delId = null, isEdit = false;
+const EM = {'가방·지갑':'👜','전자기기':'📱','의류·잡화':'👕','열쇠·카드':'🔑','문구·도서':'📚','기타':'📦'};
+const SC = {'보관중':'bk','주인찾음':'bd','처분예정':'bp'};
+const RC = {'신규':'bnew','처리중':'bprc','주인찾음':'bd','폐기':'bp'};
+
+// ── JSONP ─────────────────────────────────────────────────
+function jsonp(p) {
+  return new Promise((res, rej) => {
+    const cb = '_jcb' + Date.now() + Math.random().toString(36).slice(2);
+    const qs = Object.entries({...p, callback: cb})
+      .map(([k,v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`).join('&');
+    const s = document.createElement('script'); s.src = GAS_URL + '?' + qs;
+    const t = setTimeout(() => { rm(); rej(new Error('timeout')); }, 12000);
+    s.onerror = () => { rm(); rej(new Error('net')); };
+    window[cb] = d => { rm(); res(d); };
+    function rm() { clearTimeout(t); delete window[cb]; s.parentNode && s.parentNode.removeChild(s); }
+    document.body.appendChild(s);
+  });
+}
+
+// ── LOGIN ─────────────────────────────────────────────────
+async function doLogin() {
+  const pw = document.getElementById('pwIn').value;
+  if (!pw) return;
+  try {
+    const r = await jsonp({ action: 'authAdmin', pw });
+    if (r.ok) { startApp(pw); }
+    else document.getElementById('lerr').style.display = 'block';
+  } catch {
+    if (pw === 'yuhan2026') { startApp(pw); showToast('⚠️ 오프라인: GAS URL 미설정'); }
+    else document.getElementById('lerr').style.display = 'block';
+  }
+}
+function startApp(pw) {
+  adminPW = pw;
+  document.getElementById('login').classList.add('hidden');
+  document.getElementById('app').classList.add('show');
+  loadItems(); loadReports();
+}
+function logout() {
+  adminPW = ''; allItems = []; allReports = [];
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('login').classList.remove('hidden');
+  document.getElementById('pwIn').value = '';
+}
+document.getElementById('pwIn').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// ── PAGE NAV (PC/태블릿) ──────────────────────────────────
+function showPg(n, b) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.sbi').forEach(x => x.classList.remove('on'));
+  document.getElementById('pg-' + n).classList.add('on');
+  b.classList.add('on');
+}
+// 모바일 하단 탭
+function showPgMobile(n, b) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.bti').forEach(x => x.classList.remove('on'));
+  document.getElementById('pg-' + n).classList.add('on');
+  b.classList.add('on');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── ITEMS ─────────────────────────────────────────────────
+async function loadItems() {
+  try {
+    const r = await jsonp({ action: 'getItems' });
+    if (!r.ok) throw 0;
+    allItems = r.items || [];
+    updStats(); renderIT();
+  } catch { showToast('❌ 분실물 로드 실패'); renderIT(); }
+}
+function updStats() {
+  document.getElementById('sc1').textContent = allItems.length;
+  document.getElementById('sc2').textContent = allItems.filter(i => i.status === '보관중').length;
+  document.getElementById('sc3').textContent = allItems.filter(i => i.status === '주인찾음').length;
+  document.getElementById('sc4').textContent = allItems.filter(i => i.status === '처분예정').length;
+}
+function renderIT() {
+  const q  = document.getElementById('iSrch').value.toLowerCase();
+  const st = document.getElementById('iSt').value;
+  const f  = allItems.filter(i =>
+    (st === '전체' || i.status === st) &&
+    (!q || (i.name||'').toLowerCase().includes(q) || (i.foundLocation||'').toLowerCase().includes(q))
+  );
+  document.getElementById('iCnt').textContent = f.length + '건';
+  const tb = document.getElementById('itb');
+  if (!f.length) { tb.innerHTML = '<tr><td colspan="9" class="nodata">등록된 분실물이 없습니다</td></tr>'; return; }
+  tb.innerHTML = f.map(it => `<tr>
+    <td>${it.img
+      ? `<img class="tdimg" src="${it.img}" onclick="window.open('${it.img}','_blank')">`
+      : `<div class="tdico">${EM[it.category]||'📦'}</div>`}</td>
+    <td><span class="tdcat">${it.category}</span></td>
+    <td style="font-weight:700;max-width:140px;white-space:normal;min-width:80px">${it.name}</td>
+    <td style="color:var(--muted)">${it.color||'—'} / ${it.brand||'—'}</td>
+    <td style="max-width:120px;white-space:normal;min-width:80px">${it.foundLocation||'—'}</td>
+    <td>${it.location||'—'}</td>
+    <td style="white-space:nowrap">${it.date||'—'}</td>
+    <td><span class="tdbadge ${SC[it.status]||'bk'}">${it.status}</span></td>
+    <td><div class="tda">
+      <button class="ab ae" onclick="openEdit('${it.id}')">✏️</button>
+      <button class="ab af" onclick="qkSt('${it.id}','주인찾음')">✅</button>
+      <button class="ab adl" onclick="openDel('${it.id}','${it.name.replace(/'/g,"\\'")}')">🗑️</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+// ── REPORTS ───────────────────────────────────────────────
+async function loadReports() {
+  try {
+    const r = await jsonp({ action: 'getReports', pw: adminPW });
+    if (!r.ok) throw 0;
+    allReports = r.reports || [];
+    const n = allReports.filter(x => x.status === '신규').length;
+    const b = document.getElementById('newBadge');
+    b.textContent = n; b.style.display = n ? 'inline' : 'none';
+    const bb = document.getElementById('btiBadge');
+    bb.textContent = n; bb.classList.toggle('on', n > 0);
+    renderRT();
+  } catch { showToast('❌ 신고 목록 로드 실패'); }
+}
+function renderRT() {
+  const q  = document.getElementById('rSrch').value.toLowerCase();
+  const st = document.getElementById('rSt').value;
+  const f  = allReports.filter(r =>
+    (st === '전체' || r.status === st) &&
+    (!q || (r.name||'').toLowerCase().includes(q) ||
+           (r.reporter||'').toLowerCase().includes(q) ||
+           (r.dept||'').toLowerCase().includes(q))
+  );
+  document.getElementById('rCnt').textContent = f.length + '건';
+  const tb = document.getElementById('rtb');
+  if (!f.length) { tb.innerHTML = '<tr><td colspan="11" class="nodata">신고 접수 내역이 없습니다</td></tr>'; return; }
+  tb.innerHTML = f.map(r => `<tr>
+    <td style="font-size:10px;color:var(--muted);white-space:nowrap">${r.id}</td>
+    <td><span class="tdcat">${r.category}</span></td>
+    <td style="font-weight:700;min-width:80px;white-space:normal">${r.name}</td>
+    <td style="white-space:nowrap">${fmtDateDisplay(r.lostDate)}</td>
+    <td style="min-width:80px;white-space:normal">${r.lostLocation||'—'}</td>
+    <td>${r.reporter||'—'}</td>
+    <td style="min-width:80px;white-space:normal">${r.dept||'—'}</td>
+    <td>${r.phone||'—'}</td>
+    <td style="font-size:11px;color:var(--muted);white-space:nowrap">${fmtDateDisplay(r.submittedAt)}</td>
+    <td><span class="tdbadge ${RC[r.status]||'bnew'}">${r.status}</span></td>
+    <td><div class="tda">
+      <button class="ab ae" onclick="openRpt('${r.id}')">📋</button>
+      <button class="ab apc" onclick="chRpt('${r.id}','처리중')">처리중</button>
+      <button class="ab acp" onclick="chRpt('${r.id}','주인찾음')">주인찾음</button>
+      <button class="ab adl" onclick="chRpt('${r.id}','폐기')">폐기</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+// 날짜 포맷: 2026-03-14T15:00:00.000Z → 2026-03-14 15:00
+// 또는 2026-03-14 15:00 → 그대로, 2026-03-14 → 그대로
+function fmtDateDisplay(d) {
+  if (!d) return '—';
+  const s = String(d).replace('T', ' ');
+  // 000Z 제거
+  const clean = s.replace(/\.000Z?$/,'').replace(/Z$/,'');
+  // 분까지만 표시 (초 제거)
+  return clean.slice(0, 16);
+}
+
+// ── ITEM MODAL ────────────────────────────────────────────
+function openAdd() {
+  isEdit = false;
+  document.getElementById('imTitle').textContent = '분실물 등록';
+  document.getElementById('iSvBtn').textContent  = '💾 등록';
+  ['editId','iName','iColor','iBrand','iDesc','iRpt','iSubLoc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('iFoundLoc').value = '';
+  document.getElementById('aSubLocWrap').style.display = 'none';
+  document.getElementById('iCat').value   = '';
+  document.getElementById('iStat').value  = '보관중';
+  document.getElementById('iLoc').value   = '학생복지팀';
+  document.getElementById('iDate').valueAsDate = new Date();
+  document.getElementById('iPhoto').value = '';
+  document.getElementById('iPhotoData').value = '';
+  document.getElementById('uprv').innerHTML = '';
+  document.getElementById('imgStatus').className = 'img-status';
+  document.getElementById('uareaBox').className = 'uarea';
+  setProgress(null);
+  document.getElementById('curImgW').style.display = 'none';
+  openModal('itemOv');
+}
+function openEdit(id) {
+  const it = allItems.find(i => String(i.id) === String(id)); if (!it) return;
+  isEdit = true;
+  document.getElementById('imTitle').textContent = '분실물 수정';
+  document.getElementById('iSvBtn').textContent  = '💾 수정 저장';
+  document.getElementById('editId').value  = it.id;
+  document.getElementById('iCat').value    = it.category || '';
+  document.getElementById('iName').value   = it.name || '';
+  document.getElementById('iColor').value  = it.color || '';
+  document.getElementById('iBrand').value  = it.brand || '';
+  const fl = it.foundLocation || '';
+  const si = fl.indexOf(' / ');
+  if (si > -1) {
+    document.getElementById('iFoundLoc').value = fl.slice(0, si);
+    document.getElementById('iSubLoc').value   = fl.slice(si + 3);
+    document.getElementById('aSubLocWrap').style.display = 'block';
+  } else {
+    document.getElementById('iFoundLoc').value = fl;
+    document.getElementById('iSubLoc').value   = '';
+    document.getElementById('aSubLocWrap').style.display = fl ? 'block' : 'none';
+  }
+  document.getElementById('iLoc').value    = it.location || '학생복지팀';
+  document.getElementById('iDate').value   = it.date || '';
+  document.getElementById('iStat').value   = it.status || '보관중';
+  document.getElementById('iDesc').value   = it.desc || '';
+  document.getElementById('iRpt').value    = it.reporter || '';
+  document.getElementById('iPhoto').value  = '';
+  document.getElementById('iPhotoData').value = '';
+  document.getElementById('uprv').innerHTML = '';
+  document.getElementById('imgStatus').className = 'img-status';
+  document.getElementById('uareaBox').className = 'uarea';
+  setProgress(null);
+  const cw = document.getElementById('curImgW');
+  if (it.img) { cw.style.display = 'block'; document.getElementById('curImg').src = it.img; }
+  else cw.style.display = 'none';
+  openModal('itemOv');
+}
+function toggleAdminSubLoc() {
+  const loc  = document.getElementById('iFoundLoc').value;
+  const wrap = document.getElementById('aSubLocWrap');
+  const hints = {
+    '1호관':'예: 101호, 2층 복도, 엘리베이터 앞','2호관':'예: 201호, 화장실 앞',
+    '3호관':'예: 3층 강의실, 계단','4호관':'예: 4층 강의실, 로비',
+    '5호관':'예: 실습실, 복도','6호관':'예: 강의실, 입구',
+    '7호관(도서관)':'예: 열람실, 3층 자료실','이마트편의점':'예: 계산대 앞, 진열대',
+    '학생식당':'예: 창가 자리, 입구','교직원식당':'예: 테이블, 입구',
+    '뉴스퀘어(도서관4층)':'예: 카페 좌석, 스터디룸','주차장':'예: A구역, 자전거 보관소',
+    '나눔의숲':'예: 벤치, 입구','파고라':'예: 파고라 의자, 근처','기타':'직접 입력해 주세요'
+  };
+  if (loc) { wrap.style.display = 'block'; document.getElementById('iSubLoc').placeholder = hints[loc] || '세부 위치 입력'; }
+  else wrap.style.display = 'none';
+}
+function closeIOv(e) { if (e.target === document.getElementById('itemOv')) closeIOvD(); }
+function closeIOvD() { closeModal('itemOv'); }
+// ── IMAGE UPLOAD & COMPRESS ───────────────────────────────
+// ── IMAGE UPLOAD & COMPRESS ───────────────────────────────
+// JSONP GET 방식 URL 최대 길이 약 8000자 제한
+// base64 이미지는 1KB = 약 1365자 → 최대 약 4KB 이미지만 전송 가능
+// 따라서 400px / 품질 50% 로 강하게 압축하여 약 3~5KB 유지
+const IMG_MAX_PX  = 400;   // 최대 가로/세로 px (400px이면 약 3~6KB)
+const IMG_QUALITY = 0.5;   // JPEG 품질 50%
+const IMG_MAX_MB  = 10;    // 업로드 허용 최대 원본 크기 (MB)
+const IMG_MAX_B64 = 6000;  // base64 최대 글자수 (약 4.5KB 이미지)
+
+function setImgStatus(type, msg) {
+  const el = document.getElementById('imgStatus');
+  el.className = 'img-status ' + type;
+  el.innerHTML = msg;
+}
+function setProgress(pct) {
+  const pr = document.getElementById('imgProgress');
+  const fill = document.getElementById('imgProgressFill');
+  if (pct === null) { pr.classList.remove('on'); fill.style.width = '0%'; return; }
+  pr.classList.add('on');
+  fill.style.width = pct + '%';
+}
+
+function prevImg(inp) {
+  const w = document.getElementById('uprv');
+  w.innerHTML = '';
+  document.getElementById('iPhotoData').value = '';
+  document.getElementById('imgStatus').className = 'img-status';
+  setProgress(null);
+
+  const file = inp.files[0];
+  if (!file) return;
+
+  // ① 파일 형식 체크
+  const allowed = ['image/jpeg','image/png','image/gif','image/webp'];
+  if (!allowed.includes(file.type)) {
+    setImgStatus('err', '❌ JPG, PNG, GIF, WEBP 형식만 업로드 가능합니다');
+    document.getElementById('uareaBox').classList.add('error');
+    inp.value = '';
+    return;
+  }
+
+  // ② 원본 크기 체크 (최대 10MB)
+  const fileMB = file.size / 1024 / 1024;
+  if (fileMB > IMG_MAX_MB) {
+    setImgStatus('err', `❌ 파일이 너무 큽니다 (${fileMB.toFixed(1)}MB). 최대 ${IMG_MAX_MB}MB까지 가능합니다`);
+    document.getElementById('uareaBox').classList.add('error');
+    inp.value = '';
+    return;
+  }
+
+  // ③ 압축 시작
+  document.getElementById('uareaBox').classList.remove('error','has-img');
+  setProgress(20);
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    setProgress(50);
+    const img = new Image();
+    img.onload = () => {
+      setProgress(70);
+
+      // ── 리사이즈: 최대 IMG_MAX_PX 기준 비율 유지
+      let W = img.width, H = img.height;
+      if (W > IMG_MAX_PX || H > IMG_MAX_PX) {
+        if (W >= H) { H = Math.round(H * IMG_MAX_PX / W); W = IMG_MAX_PX; }
+        else        { W = Math.round(W * IMG_MAX_PX / H); H = IMG_MAX_PX; }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      canvas.getContext('2d').drawImage(img, 0, 0, W, H);
+
+      // ── 단계별 품질 낮추기: base64가 IMG_MAX_B64 이하가 될 때까지
+      let quality = IMG_QUALITY;
+      let compressed = canvas.toDataURL('image/jpeg', quality);
+
+      // base64 데이터 부분만 추출 (앞의 'data:image/jpeg;base64,' 제거)
+      let b64data = compressed.split(',')[1] || '';
+
+      // 아직 크면 품질을 낮춰가며 재압축 (최대 5단계)
+      const qualitySteps = [0.45, 0.35, 0.25, 0.18, 0.12];
+      let stepIdx = 0;
+      while (b64data.length > IMG_MAX_B64 && stepIdx < qualitySteps.length) {
+        quality = qualitySteps[stepIdx];
+        compressed = canvas.toDataURL('image/jpeg', quality);
+        b64data = compressed.split(',')[1] || '';
+        stepIdx++;
+      }
+
+      // 그래도 크면 px 줄여서 재시도
+      if (b64data.length > IMG_MAX_B64) {
+        const smallCanvas = document.createElement('canvas');
+        const ratio = 0.6;
+        smallCanvas.width  = Math.round(W * ratio);
+        smallCanvas.height = Math.round(H * ratio);
+        smallCanvas.getContext('2d').drawImage(img, 0, 0, smallCanvas.width, smallCanvas.height);
+        compressed = smallCanvas.toDataURL('image/jpeg', 0.4);
+        b64data = compressed.split(',')[1] || '';
+        W = smallCanvas.width; H = smallCanvas.height;
+      }
+
+      setProgress(90);
+
+      // 최종 크기 계산
+      const originalKB   = Math.round(file.size / 1024);
+      const compressedKB = Math.round(b64data.length * 0.75 / 1024);
+
+      // ── base64 전체 길이가 여전히 너무 크면 경고 후 저장 중단
+      if (compressed.length > IMG_MAX_B64 + 100) {
+        setImgStatus('warn',
+          `⚠️ 이미지를 충분히 압축하지 못했습니다 (${compressedKB}KB). 더 작은 이미지를 사용해 주세요.`
+        );
+        setProgress(null);
+        inp.value = '';
+        return;
+      }
+
+      // 저장
+      document.getElementById('iPhotoData').value = compressed;
+
+      // 미리보기
+      const item = document.createElement('div');
+      item.className = 'uprv-item';
+      const thumb = document.createElement('img');
+      thumb.src = compressed;
+      const delBtn = document.createElement('button');
+      delBtn.className = 'uprv-del';
+      delBtn.type = 'button';
+      delBtn.textContent = '✕';
+      delBtn.onclick = () => {
+        w.innerHTML = '';
+        document.getElementById('iPhotoData').value = '';
+        document.getElementById('iPhoto').value = '';
+        document.getElementById('uareaBox').classList.remove('has-img');
+        setImgStatus('warn', '🗑️ 사진이 제거되었습니다');
+        setProgress(null);
+        setTimeout(() => { document.getElementById('imgStatus').className = 'img-status'; }, 2000);
+      };
+      item.appendChild(thumb); item.appendChild(delBtn);
+      w.appendChild(item);
+
+      document.getElementById('uareaBox').classList.add('has-img');
+      setProgress(100);
+      setTimeout(() => setProgress(null), 600);
+
+      setImgStatus('ok',
+        `✅ 압축 완료 · ${W}×${H}px · ${originalKB}KB → ${compressedKB}KB (품질 ${Math.round(quality*100)}%)`
+      );
+    };
+    img.onerror = () => {
+      setImgStatus('err', '❌ 이미지를 불러올 수 없습니다');
+      setProgress(null);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// 드래그앤드롭 지원
+document.addEventListener('DOMContentLoaded', () => {
+  const area = document.getElementById('uareaBox');
+  if (!area) return;
+  area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('drag-over'); });
+  area.addEventListener('dragleave', () => area.classList.remove('drag-over'));
+  area.addEventListener('drop', e => {
+    e.preventDefault(); area.classList.remove('drag-over');
+    const dt = e.dataTransfer;
+    if (dt && dt.files.length) {
+      document.getElementById('iPhoto').files = dt.files;
+      prevImg(document.getElementById('iPhoto'));
+    }
+  });
+});
+async function saveItem() {
+  const cat = document.getElementById('iCat').value;
+  const name = document.getElementById('iName').value.trim();
+  const fl = document.getElementById('iFoundLoc').value.trim();
+  const dt = document.getElementById('iDate').value;
+  const sub = document.getElementById('iSubLoc').value.trim();
+  const fullFoundLoc = fl + (sub ? ' / ' + sub : '');
+  if (!cat || !name || !fl || !dt) { showToast('⚠️ 필수 항목을 입력해 주세요'); return; }
+  const b = document.getElementById('iSvBtn');
+  b.disabled = true; b.textContent = '저장 중...';
+  const p = {
+    category: cat, name,
+    color:    document.getElementById('iColor').value,
+    brand:    document.getElementById('iBrand').value,
+    foundLocation: fullFoundLoc,
+    location: document.getElementById('iLoc').value,
+    date: dt, status: document.getElementById('iStat').value,
+    desc: document.getElementById('iDesc').value,
+    reporter: document.getElementById('iRpt').value,
+    pw: adminPW
+  };
+  // 이미지: 압축된 데이터 사용 (prevImg에서 iPhotoData에 저장됨)
+  const imgData = document.getElementById('iPhotoData').value;
+  const doSave = async img => {
+    if (img) p.img = img;
+    try {
+      let r;
+      if (isEdit) {
+        const eid = document.getElementById('editId').value;
+        await jsonp({ action: 'deleteItem', id: eid, pw: adminPW });
+        r = await jsonp({...p, action: 'addItem'});
+      } else {
+        p.action = 'addItem';
+        r = await jsonp(p);
+      }
+      if (r.ok) {
+        showToast(isEdit ? '✅ 수정 완료' : '✅ 등록 완료');
+        closeIOvD();
+        await loadItems();
+      } else {
+        showToast('❌ 저장 실패: ' + (r.msg || '알 수 없는 오류'));
+      }
+    } catch(err) {
+      // 이미지 포함 시 실패했다면 이미지 없이 재시도
+      if (img && img.length > 0) {
+        showToast('⚠️ 이미지 제외 후 재시도 중...');
+        const pNoImg = {...p};
+        delete pNoImg.img;
+        pNoImg.img = '';
+        try {
+          pNoImg.action = 'addItem';
+          const r2 = await jsonp(pNoImg);
+          if (r2.ok) {
+            showToast('✅ 등록 완료 (이미지 제외 — 이미지 크기를 줄여주세요)');
+            closeIOvD();
+            await loadItems();
+          } else {
+            showToast('❌ 저장 실패 — GAS URL 또는 비밀번호를 확인해 주세요');
+          }
+        } catch {
+          showToast('❌ 저장 실패 — 네트워크를 확인해 주세요');
+        }
+      } else {
+        showToast('❌ 저장 실패 — GAS URL 또는 비밀번호를 확인해 주세요');
+      }
+    }
+    b.disabled = false;
+    b.textContent = isEdit ? '💾 수정 저장' : '💾 등록';
+  };
+  if (imgData) {
+    doSave(imgData);
+  } else {
+    const ex = isEdit ? allItems.find(i => String(i.id) === String(document.getElementById('editId').value)) : null;
+    doSave(ex?.img || '');
+  }
+}
+
+// ── QUICK STATUS ──────────────────────────────────────────
+async function qkSt(id, st) {
+  try {
+    const r = await jsonp({ action: 'updateItem', id, status: st, pw: adminPW });
+    if (r.ok) { showToast('✅ 상태 변경'); await loadItems(); } else throw 0;
+  } catch { showToast('❌ 변경 실패'); }
+}
+
+// ── DELETE ────────────────────────────────────────────────
+function openDel(id, name) {
+  delId = id;
+  document.getElementById('delNm').textContent = '「' + name + '」';
+  openModal('delOv');
+}
+function closeDelOv(e) { if (e.target === document.getElementById('delOv')) closeDelOvD(); }
+function closeDelOvD() { closeModal('delOv'); delId = null; }
+async function confirmDel() {
+  if (!delId) return;
+  try {
+    const r = await jsonp({ action: 'deleteItem', id: delId, pw: adminPW });
+    if (r.ok) { showToast('🗑️ 삭제 완료'); closeDelOvD(); await loadItems(); } else throw 0;
+  } catch { showToast('❌ 삭제 실패'); }
+}
+
+// ── REPORT DETAIL ─────────────────────────────────────────
+function openRpt(id) {
+  const r = allReports.find(x => String(x.id) === String(id)); if (!r) return;
+  document.getElementById('rptDet').innerHTML = [
+    ['접수번호', r.id],
+    ['분류', r.category],
+    ['물품명', `<strong>${r.name}</strong>`],
+    ['색상', r.color||'미기재'],
+    ['분실날짜', fmtDateDisplay(r.lostDate)],
+    ['분실장소', r.lostLocation||'—'],
+    ['설명', r.desc||'—'],
+    ['신고자', r.reporter],
+    ['연락처', `<a href="tel:${r.phone}" style="color:var(--blue)">${r.phone}</a>`],
+    ['학번', r.studentId||'—'],
+    ['학과', r.dept||'—'],
+    ['접수일시', fmtDateDisplay(r.submittedAt)],
+    ['현재상태', `<span class="tdbadge ${RC[r.status]||'bnew'}">${r.status}</span>`]
+  ].map(([l,v]) => `<div class="drow"><span class="dlbl">${l}</span><span>${v}</span></div>`).join('');
+  document.getElementById('rptActs').innerHTML = `
+    <button class="bcn" onclick="closeROvD()">닫기</button>
+    <button class="bsv" onclick="chRpt('${r.id}','처리중');closeROvD()">처리중</button>
+    <button class="bsv" style="background:var(--green)" onclick="chRpt('${r.id}','주인찾음');closeROvD()">주인찾음</button>
+    <button class="bsv" style="background:var(--red)" onclick="chRpt('${r.id}','폐기');closeROvD()">폐기</button>`;
+  openModal('rptOv');
+}
+function closeROv(e) { if (e.target === document.getElementById('rptOv')) closeROvD(); }
+function closeROvD() { closeModal('rptOv'); }
+async function chRpt(id, st) {
+  try {
+    const r = await jsonp({ action: 'updateReport', id, status: st, pw: adminPW });
+    if (r.ok) { showToast('✅ ' + st + ' 처리'); await loadReports(); } else throw 0;
+  } catch { showToast('❌ 변경 실패'); }
+}
+
+// ── MODAL HELPERS ─────────────────────────────────────────
+function openModal(id) {
+  document.getElementById(id).classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('on');
+  document.body.style.overflow = '';
+}
+
+// 스와이프로 모달 닫기
+['itemModal'].forEach(mid => {
+  const el = document.getElementById(mid);
+  if (!el) return;
+  let sy = 0;
+  el.addEventListener('touchstart', e => { sy = e.touches[0].clientY; }, { passive: true });
+  el.addEventListener('touchend', e => {
+    if (e.changedTouches[0].clientY - sy > 80) closeModal('itemOv');
+  }, { passive: true });
+});
+
+// ── TOAST ─────────────────────────────────────────────────
+function showToast(m) {
+  const t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('on');
+  setTimeout(() => t.classList.remove('on'), 3200);
+}
+</script>
+</body>
+</html>

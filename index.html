@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>분실물 찾기 · 유한대학교</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#003366;--blue:#0055A4;--sky:#E8F3FF;--accent:#FF6B35;--gold:#F59E0B;
+  --bg:#F4F7FB;--card:#fff;--text:#1B2035;--sub:#4B5675;--muted:#9199AD;
+  --border:#E2E8F2;--green:#16A34A;--red:#DC2626;--orange:#EA580C;
+  --sh:0 2px 16px rgba(0,51,102,.08);--r:14px;
+  --fs-xs:11px;--fs-sm:12px;--fs-base:13px;--fs-md:14px;--fs-lg:16px;
+  --touch:44px;
+}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:env(safe-area-inset-bottom)}
+img{max-width:100%;display:block}
+button,input,select,textarea{font-family:inherit;-webkit-appearance:none;appearance:none}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239199AD' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px!important}
+.offb{background:#FEF9C3;border-bottom:2px solid #FDE047;padding:10px 16px;text-align:center;font-size:var(--fs-sm);color:#854D0E;display:none;font-weight:600}
+.offb.on{display:block}
+/* HEADER */
+.hd{background:var(--navy);position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.25);padding-top:env(safe-area-inset-top)}
+.hd-in{max-width:1080px;margin:0 auto;padding:0 16px;height:62px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hb{display:flex;align-items:center;gap:10px;min-width:0}
+.hem{display:none}.hlogo{height:36px;width:auto;max-width:150px;flex-shrink:0;display:block;object-fit:contain}
+.hn{font-size:var(--fs-md);font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hs{font-size:10px;color:rgba(255,255,255,.5);margin-top:1px}
+.hr{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.hpill{background:var(--accent);color:#fff;font-size:var(--fs-xs);font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap}
+.hadm{color:rgba(255,255,255,.6);font-size:var(--fs-xs);text-decoration:none;border:1px solid rgba(255,255,255,.25);padding:6px 10px;border-radius:8px;transition:.2s;white-space:nowrap;min-height:var(--touch);display:flex;align-items:center}
+/* HERO */
+.hero{background:linear-gradient(140deg,#002755 0%,#003F82 55%,#1A6DB5 100%);color:#fff;padding:32px 16px 28px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;right:-60px;top:-40px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.04);pointer-events:none}
+.hero-in{max-width:1080px;margin:0 auto;position:relative}
+.hlbl{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.9);font-size:var(--fs-xs);font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:10px}
+.hero h1{font-size:clamp(20px,5vw,28px);font-weight:900;letter-spacing:-1px;line-height:1.2;margin-bottom:6px}
+.hero h1 em{color:var(--gold);font-style:normal}
+.hero p{font-size:var(--fs-sm);color:rgba(255,255,255,.65);line-height:1.7;margin-bottom:18px}
+.hkpi{display:flex;gap:10px;flex-wrap:wrap}
+.kpi{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:11px;padding:10px 14px;min-width:80px;flex:1;max-width:140px}
+.kn{font-size:clamp(18px,4vw,24px);font-weight:900;color:var(--gold);line-height:1}
+.kl{font-size:10px;color:rgba(255,255,255,.55);margin-top:2px}
+/* MAIN */
+.main{max-width:1080px;margin:0 auto;padding:18px 14px 80px}
+/* TABS - 5개 */
+.tabs{display:flex;gap:2px;background:#fff;border:1.5px solid var(--border);border-radius:13px;padding:4px;margin-bottom:18px;box-shadow:var(--sh);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;flex:1;min-width:0;padding:9px 6px;border:none;background:transparent;font-size:11px;font-weight:700;color:var(--muted);border-radius:9px;cursor:pointer;transition:.2s;min-height:40px;display:flex;align-items:center;justify-content:center;gap:3px;white-space:nowrap}
+.tab.on{background:var(--navy);color:#fff;box-shadow:0 3px 12px rgba(0,51,102,.2)}
+.tab:not(.on):active{background:var(--sky);color:var(--navy)}
+.panel{display:none}
+.panel.on{display:block;animation:up .25s ease}
+@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+/* 리스트 테이블 스타일 */
+.list-wrap{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+.list-hd{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
+.list-hd h3{font-size:var(--fs-md);font-weight:800;color:var(--navy)}
+.list-search{display:flex;gap:8px;align-items:center;flex-wrap:wrap;width:100%}
+@media(min-width:500px){.list-search{width:auto}}
+.list-search input{font-size:var(--fs-sm);border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;outline:none;color:var(--text);background:#fff;min-height:var(--touch);flex:1;min-width:120px}
+.list-search input:focus{border-color:var(--blue)}
+.list-search select{font-size:var(--fs-sm);border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;outline:none;color:var(--text);background:#fff;min-height:var(--touch)}
+.lcnt{font-size:var(--fs-xs);color:var(--muted);background:var(--sky);padding:5px 10px;border-radius:6px;white-space:nowrap;min-height:32px;display:flex;align-items:center}
+.list-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;white-space:nowrap}
+th{background:var(--bg);font-size:var(--fs-xs);font-weight:700;color:var(--muted);padding:9px 12px;text-align:left}
+td{padding:11px 12px;font-size:var(--fs-sm);border-top:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:#FAFBFF}
+.tdbadge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.bk{background:#DBEAFE;color:#1E40AF}
+.bd{background:#DCFCE7;color:#166534}
+.bp{background:#FEE2E2;color:#991B1B}
+.bdsp{background:#FEF3C7;color:#92400E}
+.bsrch{background:#F3E8FF;color:#6B21A8}
+.td-more{font-size:11px;font-weight:700;color:var(--blue);background:var(--sky);border:none;border-radius:6px;padding:5px 9px;cursor:pointer;min-height:30px;white-space:nowrap}
+.td-more:active{background:var(--navy);color:#fff}
+/* 분실물 현황 - 최근 10개 카드 그리드 */
+.recent-title{font-size:var(--fs-sm);font-weight:700;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.recent-title span{background:var(--accent);color:#fff;font-size:10px;padding:2px 7px;border-radius:10px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+@media(min-width:600px){.grid{grid-template-columns:repeat(3,1fr);gap:13px}}
+@media(min-width:900px){.grid{grid-template-columns:repeat(5,1fr);gap:14px}}
+.card{background:var(--card);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:.2s;-webkit-tap-highlight-color:transparent}
+.card:active{transform:scale(.97)}
+@media(hover:hover){.card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,51,102,.12);border-color:#B5CBEB}}
+.cimg{width:100%;height:clamp(90px,25vw,140px);background:var(--sky);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.cimg img{width:100%;height:100%;object-fit:cover;transition:.3s}
+.cico{font-size:clamp(32px,8vw,46px);opacity:.28}
+.sbadge{position:absolute;top:6px;right:6px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
+.cbody{padding:9px 10px 10px}
+.ccat{font-size:10px;font-weight:700;color:var(--blue);background:var(--sky);display:inline-block;padding:2px 6px;border-radius:4px;margin-bottom:4px}
+.cname{font-size:clamp(11px,2.5vw,13px);font-weight:700;line-height:1.3;margin-bottom:4px}
+.cinfo{font-size:10px;color:var(--sub);line-height:1.7}
+.cfoot{display:flex;align-items:center;justify-content:space-between;margin-top:7px;padding-top:7px;border-top:1px solid var(--border)}
+.cdate{font-size:10px;color:var(--muted)}
+.cbtn{font-size:10px;font-weight:700;color:var(--blue);background:var(--sky);border:none;border-radius:5px;padding:4px 8px;cursor:pointer;min-height:26px}
+.cbtn:active{background:var(--navy);color:#fff}
+/* 빈 상태 */
+.empty-row td{text-align:center;padding:36px;color:var(--muted);font-size:var(--fs-base)}
+.ldwrap{text-align:center;padding:40px;color:var(--muted)}
+.spin{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:rot .8s linear infinite;margin:0 auto 10px}
+@keyframes rot{to{transform:rotate(360deg)}}
+/* 찾습니다 탭 */
+.find-notice{background:linear-gradient(135deg,#F3E8FF,#E0E7FF);border:1px solid #C4B5FD;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:var(--fs-sm);color:#4C1D95;display:flex;align-items:center;gap:8px}
+/* REPORT FORM */
+.rg{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:768px){.rg{grid-template-columns:3fr 2fr;gap:20px}}
+.fc{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:18px 14px;box-shadow:var(--sh)}
+@media(min-width:480px){.fc{padding:22px 20px}}
+.fc h2{font-size:var(--fs-lg);font-weight:800;color:var(--navy);margin-bottom:5px}
+.fdesc{font-size:var(--fs-sm);color:var(--muted);margin-bottom:18px;line-height:1.7}
+.fg{margin-bottom:13px}
+.fg label{display:block;font-size:var(--fs-xs);font-weight:700;color:var(--navy);margin-bottom:5px}
+.req{color:var(--accent)}
+.fg input,.fg select,.fg textarea{width:100%;font-size:var(--fs-base);border:1.5px solid var(--border);border-radius:9px;padding:10px 12px;background:#fff;color:var(--text);outline:none;transition:.2s;resize:vertical;min-height:var(--touch)}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,85,164,.07)}
+.fg textarea{min-height:80px}
+.frow{display:grid;grid-template-columns:1fr;gap:0}
+@media(min-width:480px){.frow{grid-template-columns:1fr 1fr;gap:11px}}
+.cc{font-size:var(--fs-xs);color:var(--muted);text-align:right;margin-top:3px}
+.fsep{border-top:1px solid var(--border);margin:16px 0 14px;padding-top:14px}
+.fsep-title{font-size:var(--fs-sm);font-weight:700;color:var(--navy);margin-bottom:12px}
+.sbtn{width:100%;padding:13px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-size:var(--fs-md);font-weight:700;cursor:pointer;transition:.2s;margin-top:5px;min-height:var(--touch)}
+.sbtn:active:not(:disabled){background:var(--blue)}
+.sbtn:disabled{background:#b0bac9;cursor:not-allowed}
+@media(hover:hover){.sbtn:hover:not(:disabled){background:var(--blue);transform:translateY(-1px)}}
+.ibox{background:linear-gradient(145deg,var(--navy) 0%,#1A4B82 100%);color:#fff;border-radius:var(--r);padding:18px 14px;box-shadow:var(--sh)}
+@media(min-width:480px){.ibox{padding:20px}}
+.ibox h3{font-size:var(--fs-md);font-weight:800;margin-bottom:14px}
+.irow{display:flex;gap:11px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.irow:last-of-type{border:none}
+.iico{width:32px;height:32px;flex-shrink:0;border-radius:8px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:15px}
+.itxt strong{display:block;font-size:var(--fs-sm);font-weight:700;margin-bottom:2px}
+.itxt span{font-size:var(--fs-xs);color:rgba(255,255,255,.58);line-height:1.55}
+/* MODAL */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:flex-end;justify-content:center;padding:0}
+.ov.on{display:flex;animation:fi .2s}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+.modal{background:#fff;border-radius:20px 20px 0 0;width:100%;overflow:hidden;animation:slideUp .28s cubic-bezier(.32,1,.23,1);box-shadow:0 -8px 40px rgba(0,0,0,.2);max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+@media(min-width:600px){.ov{align-items:center;padding:20px}.modal{border-radius:20px;max-width:460px;animation:suUp .25s ease}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes suUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.mo-handle{width:40px;height:4px;border-radius:2px;background:var(--border);margin:10px auto 0}
+@media(min-width:600px){.mo-handle{display:none}}
+.mim{width:100%;height:clamp(160px,38vw,220px);background:var(--sky);display:flex;align-items:center;justify-content:center;font-size:68px;overflow:hidden}
+.mim img{width:100%;height:100%;object-fit:cover}
+.mbody{padding:16px 18px 8px}
+@media(min-width:480px){.mbody{padding:18px 22px 10px}}
+.mcat{font-size:var(--fs-xs);font-weight:700;color:var(--blue);margin-bottom:4px}
+.mname{font-size:clamp(15px,4vw,18px);font-weight:800;margin-bottom:12px}
+.mrows{display:grid;gap:0;margin-bottom:14px}
+.mrow{display:flex;gap:10px;font-size:var(--fs-base);padding:7px 0;border-bottom:1px solid var(--border)}
+.mrow:last-child{border:none}
+.mlbl{color:var(--muted);min-width:64px;font-size:var(--fs-sm);font-weight:600;flex-shrink:0}
+.mact{display:flex;gap:10px;padding:0 18px 18px;padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+@media(min-width:480px){.mact{padding:0 22px 22px}}
+.bcl{flex:1;padding:11px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:var(--fs-base);font-weight:600;cursor:pointer;color:var(--sub);min-height:var(--touch)}
+.bgo{flex:2;padding:11px;border:none;border-radius:10px;background:var(--navy);color:#fff;font-size:var(--fs-base);font-weight:700;cursor:pointer;transition:.2s;min-height:var(--touch)}
+.bgo:active{background:var(--blue)}
+/* TOAST */
+.toast{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(80px);background:#1B2035;color:#fff;padding:11px 20px;border-radius:40px;font-size:var(--fs-base);font-weight:600;box-shadow:0 8px 28px rgba(0,0,0,.22);transition:transform .35s cubic-bezier(.34,1.56,.64,1);z-index:999;pointer-events:none;max-width:calc(100vw - 40px);text-align:center}
+.toast.on{transform:translateX(-50%) translateY(0)}
+@media(min-width:768px) and (max-width:1023px){.hero{padding:40px 24px 32px}.main{padding:22px 20px 80px}.hd-in{padding:0 20px}}
+@media(min-width:1024px){.hero{padding:48px 32px 40px}.main{padding:26px 32px 80px}.hd-in{padding:0 32px}.fc{padding:26px 24px}.ibox{padding:24px 20px}.tab:hover:not(.on){background:var(--sky);color:var(--navy)}}
+</style>
+</head>
+<body>
+<div class="offb" id="offb">⚠️ 서버 연결 안됨 — 잠시 후 다시 시도해 주세요</div>
+<div class="hd">
+  <div class="hd-in">
+    <div class="hb">
+      <img src="data:image/png;base64,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" alt="유한대학교" class="hlogo">
+      <div style="margin-left:6px"><div class="hn">분실물 찾기</div><div class="hs">학생복지팀 · 유재라관 1층</div></div>
+    </div>
+    <div class="hr">
+      <a href="분실물_관리자.html" class="hadm">🔐 관리자</a>
+      <div class="hpill" id="keepPill">보관중 —</div>
+    </div>
+  </div>
+</div>
+<div class="hero">
+  <div class="hero-in">
+    <div class="hlbl">📦 학생복지팀 분실물 센터</div>
+    <h1>잃어버린 물건을<br><em>찾아드립니다</em></h1>
+    <p>캠퍼스 내 분실물을 학생복지팀에서 보관하고 있습니다.<br>목록을 확인하거나 분실물을 신고해 주세요.</p>
+    <div class="hkpi">
+      <div class="kpi"><div class="kn" id="kT">—</div><div class="kl">전체 보관</div></div>
+      <div class="kpi"><div class="kn" id="kK">—</div><div class="kl">보관 중</div></div>
+      <div class="kpi"><div class="kn" id="kD">—</div><div class="kl">주인 찾음</div></div>
+      <div class="kpi"><div class="kn" id="kF">—</div><div class="kl">찾습니다</div></div>
+    </div>
+  </div>
+</div>
+<div class="main">
+  <!-- 5개 탭 -->
+  <div class="tabs">
+    <button class="tab on" onclick="swTab('keep',this)">📋 분실물현황</button>
+    <button class="tab" onclick="swTab('done',this)">✅ 수령완료</button>
+    <button class="tab" onclick="swTab('disp',this)">🗑️ 폐기</button>
+    <button class="tab" onclick="swTab('find',this)">🔍 찾습니다</button>
+    <button class="tab" onclick="swTab('report',this)">✏️ 분실신고</button>
+  </div>
+
+  <!-- ── 분실물 현황 탭 ── -->
+  <div class="panel on" id="tab-keep">
+    <!-- 최근 10개 카드 -->
+    <div class="recent-title">📸 최근 등록 분실물 <span>최근 10건</span></div>
+    <div class="grid" id="recentGrid">
+      <div style="grid-column:1/-1" class="ldwrap"><div class="spin"></div><div style="font-size:12px;color:var(--muted)">불러오는 중...</div></div>
+    </div>
+    <!-- 전체 리스트 -->
+    <div class="list-wrap">
+      <div class="list-hd">
+        <h3>📋 보관중 분실물 목록</h3>
+        <div class="list-search">
+          <input type="search" id="keepSrch" placeholder="🔍 물품명·색상 검색..." oninput="renderKeep()" autocomplete="off">
+          <select id="keepCat" onchange="renderKeep()">
+            <option value="전체">전체 분류</option>
+            <option>가방·지갑</option><option>전자기기</option><option>의류·잡화</option>
+            <option>열쇠·카드</option><option>문구·도서</option><option>기타</option>
+          </select>
+          <span class="lcnt" id="keepCnt">0건</span>
+        </div>
+      </div>
+      <div class="list-scroll">
+        <table>
+          <thead><tr><th>번호</th><th>분류</th><th>물품명</th><th>발견장소</th><th>보관위치</th><th>접수일</th><th>상태</th><th></th></tr></thead>
+          <tbody id="keepTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 수령완료 탭 ── -->
+  <div class="panel" id="tab-done">
+    <div class="list-wrap">
+      <div class="list-hd">
+        <h3>✅ 수령완료 목록</h3>
+        <div class="list-search">
+          <input type="search" id="doneSrch" placeholder="🔍 물품명 검색..." oninput="renderDone()" autocomplete="off">
+          <span class="lcnt" id="doneCnt">0건</span>
+        </div>
+      </div>
+      <div class="list-scroll">
+        <table>
+          <thead><tr><th>번호</th><th>분류</th><th>물품명</th><th>발견장소</th><th>보관위치</th><th>접수일</th><th>상태</th><th></th></tr></thead>
+          <tbody id="doneTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 폐기 탭 ── -->
+  <div class="panel" id="tab-disp">
+    <div class="list-wrap">
+      <div class="list-hd">
+        <h3>🗑️ 폐기 목록</h3>
+        <div class="list-search">
+          <input type="search" id="dispSrch" placeholder="🔍 물품명 검색..." oninput="renderDisp()" autocomplete="off">
+          <span class="lcnt" id="dispCnt">0건</span>
+        </div>
+      </div>
+      <div class="list-scroll">
+        <table>
+          <thead><tr><th>번호</th><th>분류</th><th>물품명</th><th>발견장소</th><th>접수일</th><th>상태</th><th></th></tr></thead>
+          <tbody id="dispTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 찾습니다 탭 ── -->
+  <div class="panel" id="tab-find">
+    <div class="find-notice">🔍 학생들이 직접 신고한 분실물 목록입니다. 해당 물품이 있으면 학생복지팀으로 연락 주세요.</div>
+    <div class="list-wrap">
+      <div class="list-hd">
+        <h3>🔍 찾습니다 목록</h3>
+        <div class="list-search">
+          <input type="search" id="findSrch" placeholder="🔍 물품명·장소 검색..." oninput="renderFind()" autocomplete="off">
+          <span class="lcnt" id="findCnt">0건</span>
+        </div>
+      </div>
+      <div class="list-scroll">
+        <table>
+          <thead><tr><th>접수번호</th><th>분류</th><th>물품명</th><th>분실장소</th><th>분실날짜</th><th>신고자</th><th>접수일시</th><th>상태</th></tr></thead>
+          <tbody id="findTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 분실신고 탭 ── -->
+  <div class="panel" id="tab-report">
+    <div class="rg">
+      <div class="fc">
+        <h2>✏️ 분실물 신고</h2>
+        <p class="fdesc">정보를 입력하시면 담당자가 확인 후 연락드립니다.<br>
+          <strong style="color:var(--navy)">☎ 02-2610-0333 (학생복지팀)</strong></p>
+        <div class="fg"><label>물품 분류 <span class="req">*</span></label>
+          <select id="rCat"><option value="">선택</option>
+            <option>가방·지갑</option><option>전자기기</option><option>의류·잡화</option>
+            <option>열쇠·카드</option><option>문구·도서</option><option>기타</option>
+          </select></div>
+        <div class="fg"><label>물품명 / 특징 <span class="req">*</span></label>
+          <input type="text" id="rItemName" placeholder="예: 검정 백팩, 에어팟 케이스" autocomplete="off"></div>
+        <div class="frow">
+          <div class="fg"><label>분실 날짜 <span class="req">*</span></label><input type="date" id="rDate"></div>
+          <div class="fg"><label>분실 추정 장소 <span class="req">*</span></label>
+            <select id="rLoc" onchange="toggleSubLoc()"><option value="">선택</option>
+              <option>1호관</option><option>2호관</option><option>3호관</option>
+              <option>4호관</option><option>5호관</option><option>6호관</option>
+              <option>7호관(도서관)</option><option>이마트편의점</option>
+              <option>학생식당</option><option>교직원식당</option>
+              <option>뉴스퀘어(도서관4층)</option><option>주차장</option>
+              <option>나눔의숲</option><option>파고라</option><option>기타</option>
+            </select></div>
+        </div>
+        <div class="fg" id="subLocWrap" style="display:none">
+          <label>세부 장소</label>
+          <input type="text" id="rSubLoc" placeholder="예: 3층 강의실, 화장실 앞..." autocomplete="off"></div>
+        <div class="fg"><label>색상 / 브랜드</label>
+          <input type="text" id="rColor" placeholder="예: 검정색, 나이키"></div>
+        <div class="fg"><label>상세 설명</label>
+          <textarea id="rDesc" placeholder="색상, 브랜드, 특이사항 등..." oninput="chCnt(this,'dc',200)"></textarea>
+          <div class="cc"><span id="dc">0</span>/200자</div></div>
+        <div class="fsep">
+          <div class="fsep-title">📞 신고자 정보</div>
+          <div class="frow">
+            <div class="fg"><label>이름 <span class="req">*</span></label><input type="text" id="rWho" placeholder="홍길동" autocomplete="name"></div>
+            <div class="fg"><label>연락처</label><input type="tel" id="rTel" placeholder="010-0000-0000 (선택)" autocomplete="tel"></div>
+          </div>
+          <div class="frow">
+            <div class="fg"><label>학번</label><input type="text" id="rSid" placeholder="2024XXXXX" autocomplete="off"></div>
+            <div class="fg"><label>학과</label>
+              <select id="rDept"><option value="">선택</option>
+                <optgroup label="공학계열">
+                  <option>기계시스템전공</option><option>소방설비안전전공</option>
+                  <option>컴퓨터정보통신전공</option><option>컴퓨터소프트웨어전공</option>
+                  <option>게임콘텐츠전공</option><option>산업디자인전공</option>
+                  <option>전기공학전공</option><option>전자공학전공</option>
+                  <option>IT비즈니스전공</option><option>산업안전전공</option>
+                </optgroup>
+                <optgroup label="예체능계열">
+                  <option>패션디자인전공</option><option>방송영상전공</option>
+                  <option>방송연예전공</option><option>애니메이션웹툰전공</option>
+                  <option>시각디자인전공</option><option>실내건축전공</option>
+                  <option>광고미디어전공</option><option>방송문예창작전공</option>
+                </optgroup>
+                <optgroup label="인문사회계열">
+                  <option>사회복지전공</option><option>호텔관광전공</option>
+                  <option>항공서비스학과</option><option>일본비즈니스전공</option>
+                </optgroup>
+                <optgroup label="자연과학계열">
+                  <option>호텔조리전공</option><option>식품영양학과</option>
+                  <option>응급구조과</option><option>작업치료과</option>
+                  <option>보건의료행정학과</option><option>유한바이오제약전공</option>
+                </optgroup>
+                <option value="기타">기타</option>
+              </select></div>
+          </div>
+        </div>
+        <button class="sbtn" id="subBtn" onclick="submitReport()">📨 분실물 신고 제출</button>
+      </div>
+      <div class="ibox">
+        <h3>📌 분실물 찾는 방법</h3>
+        <div class="irow"><div class="iico">🏢</div><div class="itxt"><strong>방문 수령</strong><span>학생복지팀 방문 · 학생증 지참<br>유재라관 1층<br>평일 09:00–17:00 (점심 12–13시 제외)</span></div></div>
+        <div class="irow"><div class="iico">📞</div><div class="itxt"><strong>전화 문의</strong><span>02-2610-0333<br>전화 확인 후 방문 권장</span></div></div>
+        <div class="irow"><div class="iico">🗓️</div><div class="itxt"><strong>보관 기간</strong><span>접수 후 <strong style="color:#F59E0B">30일 보관</strong><br>기간 초과 시 교내 규정 처분</span></div></div>
+        <div class="irow"><div class="iico">📍</div><div class="itxt"><strong>보관 위치</strong><span>학생복지팀 사무실<br>유재라관 1층<br>습득물 직접 제출도 가능</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="ov" id="ov" onclick="closeOv(event)">
+  <div class="modal" id="modalBox">
+    <div class="mo-handle"></div>
+    <div id="moIm" class="mim"></div>
+    <div class="mbody">
+      <div class="mcat" id="moCat"></div>
+      <div class="mname" id="moNm"></div>
+      <div class="mrows" id="moRws"></div>
+    </div>
+    <div class="mact">
+      <button class="bcl" onclick="closeOvDirect()">닫기</button>
+      <button class="bgo" onclick="claimAlert()">📞 찾으러 가겠습니다</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyUR3oskoo5qJcZEec1XEfTqh2DLyMatYDMXmf0lKtjBNrblcjxiyV_nT2HdJYOwlJ_/exec';
+let items = [], reports = [];
+const EM = {'가방·지갑':'👜','전자기기':'📱','의류·잡각':'👕','의류·잡화':'👕','열쇠·카드':'🔑','문구·도서':'📚','기타':'📦'};
+const SC = {'보관중':'bk','주인찾음':'bd','처분예정':'bdsp','폐기':'bdsp'};
+
+function jsonp(p) {
+  return new Promise((res, rej) => {
+    const cb = '_jcb' + Date.now() + Math.random().toString(36).slice(2);
+    const qs = Object.entries({...p, callback: cb}).map(([k,v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`).join('&');
+    const s = document.createElement('script'); s.src = GAS_URL + '?' + qs;
+    const t = setTimeout(() => { rm(); rej(new Error('timeout')); }, 12000);
+    s.onerror = () => { rm(); rej(new Error('net')); };
+    window[cb] = d => { rm(); res(d); };
+    function rm() { clearTimeout(t); delete window[cb]; s.parentNode && s.parentNode.removeChild(s); }
+    document.body.appendChild(s);
+  });
+}
+
+async function load() {
+  // getItems 와 getReportsPublic 을 개별 처리
+  // getReportsPublic이 없는 구 버전 GAS도 대응
+  try {
+    const ri = await jsonp({ action: 'getItems' });
+    if (ri.ok) { items = ri.items || []; }
+    updKPI(); renderRecent(); renderKeep(); renderDone(); renderDisp();
+  } catch {
+    document.getElementById('offb').classList.add('on');
+    document.getElementById('recentGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted)">📡 연결 실패 — GAS_URL을 설정해 주세요</div>';
+    document.getElementById('keepTbody').innerHTML = '<tr class="empty-row"><td colspan="8">📡 연결 실패</td></tr>';
+  }
+  // 찾습니다(신고목록)는 별도 로드 — 실패해도 나머지 탭 영향 없음
+  try {
+    const rr = await jsonp({ action: 'getReportsPublic' });
+    if (rr.ok) { reports = rr.reports || []; }
+    document.getElementById('kF').textContent = reports.length;
+    renderFind();
+  } catch {
+    // getReportsPublic 미지원 GAS면 조용히 빈 목록으로
+    renderFind();
+  }
+}
+
+function updKPI() {
+  const k = items.filter(i => i.status === '보관중').length;
+  document.getElementById('kT').textContent = items.length;
+  document.getElementById('kK').textContent = k;
+  document.getElementById('kD').textContent = items.filter(i => i.status === '주인찾음').length;
+  document.getElementById('keepPill').textContent = '보관중 ' + k;
+}
+
+function renderAll() {
+  renderRecent(); renderKeep(); renderDone(); renderDisp(); renderFind();
+}
+
+// 최근 10개 카드
+function renderRecent() {
+  const recent = items.filter(i => i.status === '보관중')
+    .sort((a,b) => (b.registeredAt||'').localeCompare(a.registeredAt||''))
+    .slice(0, 10);
+  const g = document.getElementById('recentGrid');
+  if (!recent.length) { g.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted)">등록된 분실물이 없습니다</div>'; return; }
+  g.innerHTML = recent.map(it => `
+    <div class="card" onclick="openMo('${it.id}')">
+      <div class="cimg">
+        ${it.img ? `<img src="${it.img}" alt="${it.name}" loading="lazy">` : `<span class="cico">${EM[it.category]||'📦'}</span>`}
+        <span class="sbadge bk">보관중</span>
+      </div>
+      <div class="cbody">
+        <div class="ccat">${it.category}</div>
+        <div class="cname">${it.name}</div>
+        <div class="cinfo">📍 ${it.location||'—'}</div>
+        <div class="cfoot"><span class="cdate">${fmtDateShort(it.date)}</span><button class="cbtn">상세</button></div>
+      </div>
+    </div>`).join('');
+}
+
+// 리스트 공통 렌더
+function renderList(tbodyId, cntId, srchId, statusFilter, cols, catId) {
+  const q  = document.getElementById(srchId).value.toLowerCase();
+  const cat = catId ? document.getElementById(catId).value : '전체';
+  let data = items.filter(i => {
+    const mS = Array.isArray(statusFilter) ? statusFilter.includes(i.status) : i.status === statusFilter;
+    const mQ = !q || (i.name||'').toLowerCase().includes(q) || (i.color||'').toLowerCase().includes(q);
+    const mC = cat === '전체' || i.category === cat;
+    return mS && mQ && mC;
+  });
+  document.getElementById(cntId).textContent = data.length + '건';
+  const tb = document.getElementById(tbodyId);
+  if (!data.length) { tb.innerHTML = `<tr class="empty-row"><td colspan="${cols}">해당 항목이 없습니다</td></tr>`; return; }
+  tb.innerHTML = data.map((it, idx) => `<tr>
+    <td style="color:var(--muted);font-size:10px">${idx+1}</td>
+    <td><span class="tdbadge" style="background:var(--sky);color:var(--blue)">${it.category}</span></td>
+    <td style="font-weight:700;min-width:80px;white-space:normal">${it.name}</td>
+    <td style="min-width:80px;white-space:normal;font-size:11px">${it.foundLocation||'—'}</td>
+    ${cols >= 8 ? `<td style="font-size:11px">${it.location||'—'}</td>` : ''}
+    <td style="font-size:11px;white-space:nowrap">${fmtDateShort(it.date)}</td>
+    <td><span class="tdbadge ${SC[it.status]||'bk'}">${it.status}</span></td>
+    <td><button class="td-more" onclick="openMo('${it.id}')">상세</button></td>
+  </tr>`).join('');
+}
+
+function renderKeep() { renderList('keepTbody','keepCnt','keepSrch','보관중',8,'keepCat'); }
+function renderDone() { renderList('doneTbody','doneCnt','doneSrch','주인찾음',8,null); }
+function renderDisp() { renderList('dispTbody','dispCnt','dispSrch',['처분예정','폐기'],7,null); }
+
+// 찾습니다 (학생 신고 목록) - 이름 마스킹
+function renderFind() {
+  const q = document.getElementById('findSrch').value.toLowerCase();
+  const f = reports.filter(r => !q || (r.name||'').toLowerCase().includes(q) || (r.lostLocation||'').toLowerCase().includes(q));
+  document.getElementById('findCnt').textContent = f.length + '건';
+  const tb = document.getElementById('findTbody');
+  if (!f.length) { tb.innerHTML = '<tr class="empty-row"><td colspan="8">신고된 분실물이 없습니다</td></tr>'; return; }
+  tb.innerHTML = f.map(r => `<tr style="cursor:pointer" onclick="openFindMo('${r.id}')" title="클릭하여 상세 보기">
+    <td style="font-size:10px;color:var(--blue);font-weight:700;text-decoration:underline">${r.id}</td>
+    <td><span class="tdbadge" style="background:var(--sky);color:var(--blue)">${r.category||'—'}</span></td>
+    <td style="font-weight:700;min-width:80px;white-space:normal">${r.name}</td>
+    <td style="font-size:11px;min-width:80px;white-space:normal">${r.lostLocation||'—'}</td>
+    <td style="font-size:11px;white-space:nowrap">${fmtDateShort(r.lostDate)}</td>
+    <td style="font-size:11px">${maskName(r.reporter)}</td>
+    <td style="font-size:10px;color:var(--muted)">${r.submittedAt||'—'}</td>
+    <td><span class="tdbadge bsrch">${r.status||'신규'}</span></td>
+  </tr>`).join('');
+}
+
+// 찾습니다 상세 모달
+function openFindMo(id) {
+  const r = reports.find(x => String(x.id) === String(id));
+  if (!r) return;
+  const im = document.getElementById('moIm');
+  im.innerHTML = EM[r.category] || '🔍';
+  document.getElementById('moCat').textContent = (r.category || '분류 미확인') + ' · 찾습니다';
+  document.getElementById('moNm').textContent  = r.name;
+  const rows = [
+    ['접수번호', r.id],
+    ['분실 날짜', fmtDateShort(r.lostDate)],
+    ['분실 장소', r.lostLocation || '—'],
+    ['색상/특징', r.color || '미기재'],
+    ['상세 설명', r.desc || '—'],
+    ['신고자',    maskName(r.reporter)],
+    ['학과',      r.dept || '—'],
+    ['접수일시',  r.submittedAt || '—'],
+    ['상태',      r.status || '신규'],
+  ];
+  document.getElementById('moRws').innerHTML = rows
+    .map(([l,v]) => `<div class="mrow"><span class="mlbl">${l}</span><span>${v}</span></div>`).join('');
+  // 찾습니다 모달은 버튼 텍스트 변경
+  document.querySelector('.bgo').textContent = '📞 02-2610-0333 습득 신고';
+  document.getElementById('ov').classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+
+// 이름 마스킹: 김철수 → 김OO
+function maskName(name) {
+  if (!name || name.length < 2) return name || '—';
+  return name[0] + 'O'.repeat(name.length - 1);
+}
+
+// 날짜 포맷: 2026-03-14T15:00:00.000Z → 2026-03-14
+function fmtDateShort(d) {
+  if (!d) return '—';
+  return String(d).replace('T', ' ').slice(0, 10);
+}
+
+function swTab(n, b) {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  document.getElementById('tab-' + n).classList.add('on');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function openMo(id) {
+  const it = items.find(i => String(i.id) === String(id)); if (!it) return;
+  // bgo 버튼 복원 (찾습니다 모달에서 숨겼을 수 있음)
+  document.querySelector('.bgo').style.display = '';
+  document.querySelector('.bgo').textContent = '📞 찾으러 가겠습니다';
+  const im = document.getElementById('moIm');
+  im.innerHTML = it.img ? `<img src="${it.img}" alt="${it.name}">` : (EM[it.category] || '📦');
+  document.getElementById('moCat').textContent = it.category;
+  document.getElementById('moNm').textContent  = it.name;
+  const rows = [
+    ['상태', it.status], ['색상', it.color||'미확인'], ['브랜드', it.brand||'미확인'],
+    ['발견장소', it.foundLocation||'—'], ['보관위치', it.location||'—'], ['접수일', fmtDateShort(it.date)]
+  ];
+  if (it.desc) rows.push(['설명', it.desc]);
+  document.getElementById('moRws').innerHTML = rows.map(([l,v]) => `<div class="mrow"><span class="mlbl">${l}</span><span>${v}</span></div>`).join('');
+  document.getElementById('ov').classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+function closeOv(e) { if (e.target === document.getElementById('ov')) closeOvDirect(); }
+function closeOvDirect() {
+  document.getElementById('ov').classList.remove('on');
+  document.body.style.overflow = '';
+  // 버튼 항상 복원
+  document.querySelector('.bgo').style.display = '';
+  document.querySelector('.bgo').textContent = '📞 찾으러 가겠습니다';
+}
+function claimAlert() { closeOvDirect(); showToast('✅ 학생복지팀 02-2610-0333 으로 연락 주세요!'); }
+
+async function submitReport() {
+  const cat = document.getElementById('rCat').value, name = document.getElementById('rItemName').value.trim();
+  const date = document.getElementById('rDate').value, loc = document.getElementById('rLoc').value;
+  const sub = document.getElementById('rSubLoc').value.trim(), who = document.getElementById('rWho').value.trim();
+  const tel = document.getElementById('rTel').value.trim();
+  if (!cat || !name || !date || !loc || !who) { showToast('⚠️ 필수 항목(*)을 모두 입력해 주세요'); return; }
+  const fullLoc = loc + (sub ? ' / ' + sub : '');
+  const b = document.getElementById('subBtn');
+  b.disabled = true; b.textContent = '전송 중...';
+  try {
+    const r = await jsonp({ action:'addReport', category:cat, name, color:document.getElementById('rColor').value,
+      lostDate:date, lostLocation:fullLoc, desc:document.getElementById('rDesc').value,
+      reporter:who, phone:tel||'미기재', studentId:document.getElementById('rSid').value,
+      dept:document.getElementById('rDept').value });
+    if (r.ok) {
+      showToast('📨 신고 접수 완료! 접수번호: ' + r.id);
+      ['rCat','rItemName','rDate','rLoc','rSubLoc','rColor','rDesc','rWho','rTel','rSid','rDept'].forEach(id => { document.getElementById(id).value = ''; });
+      document.getElementById('dc').textContent = '0';
+      document.getElementById('subLocWrap').style.display = 'none';
+      // 찾습니다 탭 갱신
+      await load();
+    } else throw new Error(r.msg);
+  } catch { showToast('❌ 전송 실패 — GAS URL을 확인해 주세요'); }
+  b.disabled = false; b.textContent = '📨 분실물 신고 제출';
+}
+
+const LOC_HINTS = {'1호관':'예: 101호, 2층 복도','2호관':'예: 201호, 화장실 앞','3호관':'예: 3층 강의실','4호관':'예: 4층 강의실','5호관':'예: 실습실, 복도','6호관':'예: 강의실, 입구','7호관(도서관)':'예: 열람실, 3층','이마트편의점':'예: 계산대 앞','학생식당':'예: 창가 자리','교직원식당':'예: 테이블, 입구','뉴스퀘어(도서관4층)':'예: 카페 좌석','주차장':'예: A구역','나눔의숲':'예: 벤치 앞','파고라':'예: 파고라 의자','기타':'장소를 직접 입력해 주세요'};
+function toggleSubLoc() {
+  const loc = document.getElementById('rLoc').value, wrap = document.getElementById('subLocWrap'), inp = document.getElementById('rSubLoc');
+  if (loc) { wrap.style.display='block'; inp.placeholder = LOC_HINTS[loc]||'세부 위치 입력'; } else wrap.style.display='none';
+}
+function chCnt(el, cid, max) { const l=el.value.length; document.getElementById(cid).textContent=Math.min(l,max); if(l>max)el.value=el.value.slice(0,max); }
+function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),3500); }
+
+let startY=0;
+document.getElementById('modalBox').addEventListener('touchstart', e=>{ startY=e.touches[0].clientY; }, {passive:true});
+document.getElementById('modalBox').addEventListener('touchend', e=>{ if(e.changedTouches[0].clientY-startY>80)closeOvDirect(); }, {passive:true});
+
+document.getElementById('rDate').valueAsDate = new Date();
+load();
+</script>
+</body>
+</html>
